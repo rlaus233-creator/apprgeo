@@ -219,10 +219,14 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 .live-pill-txt{font-size:12px;font-weight:600;color:#fff;}
 .call-timer{font-size:13px;color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums;}
 #localVideo{
-  position:absolute;bottom:148px;right:16px;
+  position:absolute;top:110px;right:16px;
   width:90px;height:130px;object-fit:cover;
   border-radius:18px;border:2px solid rgba(255,255,255,.2);
+  cursor:grab;touch-action:none;
+  transition:box-shadow .15s;
+  z-index:10;
 }
+#localVideo:active{cursor:grabbing;box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .call-controls{
   position:absolute;bottom:0;left:0;right:0;
   padding:0 36px 52px;
@@ -290,6 +294,19 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 
   <div style="padding:0 24px;display:flex;flex-direction:column;gap:20px;flex:1;">
 
+    <!-- 프로필 사진 -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div id="avatarWrap" onclick="document.getElementById('avatarInput').click()" style="width:88px;height:88px;border-radius:50%;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;">
+        <img id="avatarPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+        <div id="avatarPlaceholder" style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ink3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span style="font-size:11px;color:var(--ink3);">사진 추가</span>
+        </div>
+      </div>
+      <input id="avatarInput" type="file" accept="image/*" style="display:none;" onchange="previewAvatar(event)">
+      <div style="font-size:12px;color:var(--ink3);">탭해서 사진을 추가하세요</div>
+    </div>
+
     <div>
       <div class="seg-label" style="margin-bottom:8px;">닉네임</div>
       <input id="nicknameInput" type="text" placeholder="사용할 이름을 입력하세요" maxlength="12"
@@ -299,40 +316,26 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <div>
       <div class="seg-label" style="margin-bottom:8px;">나이대</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="ageGrid">
-        <div class="pick-row" data-val="10s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);">
-          <div style="font-size:15px;font-weight:700;">10대</div>
-        </div>
-        <div class="pick-row" data-val="20s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);">
-          <div style="font-size:15px;font-weight:700;">20대</div>
-        </div>
-        <div class="pick-row" data-val="30s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);">
-          <div style="font-size:15px;font-weight:700;">30대</div>
-        </div>
-        <div class="pick-row" data-val="40s+" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);">
-          <div style="font-size:15px;font-weight:700;">40대+</div>
-        </div>
+        <div class="pick-row" data-val="10s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">10대</div></div>
+        <div class="pick-row" data-val="20s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">20대</div></div>
+        <div class="pick-row" data-val="30s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">30대</div></div>
+        <div class="pick-row" data-val="40s+" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">40대+</div></div>
       </div>
     </div>
 
     <div>
       <div class="seg-label" style="margin-bottom:8px;">성별 (선택)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;" id="genderGrid">
-        <div class="pick-row" data-val="male" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);">
-          <div style="font-size:15px;font-weight:700;">남성</div>
-        </div>
-        <div class="pick-row" data-val="female" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);">
-          <div style="font-size:15px;font-weight:700;">여성</div>
-        </div>
-        <div class="pick-row" data-val="none" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);">
-          <div style="font-size:15px;font-weight:700;">비공개</div>
-        </div>
+        <div class="pick-row" data-val="male" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">남성</div></div>
+        <div class="pick-row" data-val="female" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">여성</div></div>
+        <div class="pick-row" data-val="none" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">비공개</div></div>
       </div>
     </div>
 
   </div>
 
   <div class="setup-bottom">
-    <button class="btn-blue" id="profileBtn" onclick="saveProfile()">시작하기</button>
+    <button class="btn-blue" onclick="saveProfile()">시작하기</button>
   </div>
 </div>
 <div class="screen" id="onboard">
@@ -405,8 +408,8 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <div class="pick-row" data-val="IN"><span class="pick-flag">🇮🇳</span><div class="pick-texts"><div class="pick-name">인도</div><div class="pick-native">India</div></div><div class="pick-radio"></div></div>
   </div>
 
-  <div class="setup-bottom">
-    <button class="btn-blue" id="connectBtn" disabled>연결 시작</button>
+  <div class="setup-bottom" id="connectWrap" style="display:none;">
+    <button class="btn-blue" id="connectBtn">연결 시작</button>
   </div>
 </div>
 
@@ -428,6 +431,11 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   <div id="demandCards" style="width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:28px;"></div>
 
   <button id="cancelBtn" style="font-size:14px;font-weight:600;color:var(--ink2);background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;cursor:pointer;padding:14px 48px;">취소</button>
+
+  <div style="margin-top:16px;width:100%;border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div style="font-size:11px;color:var(--ink3);font-weight:500;letter-spacing:.04em;">개발자 테스트</div>
+    <button id="testBtn" style="font-size:13px;font-weight:600;color:var(--ink2);background:var(--bg);border:1px dashed var(--border);border-radius:var(--radius-sm);font-family:inherit;cursor:pointer;padding:12px 32px;">조건없이 P2P 테스트</button>
+  </div>
 </div>
 
 <!-- CALL -->
@@ -437,7 +445,10 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <div class="call-overlay"></div>
     <div class="call-top">
       <div class="call-peer">
-        <div class="call-peer-flag" id="peerFlag">🌍</div>
+        <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,.15);">
+          <img id="callAvatar" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+          <div id="callAvatarFallback" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:18px;">🌍</div>
+        </div>
         <div class="call-peer-info">
           <div class="call-peer-name" id="peerName">연결됨</div>
           <div class="call-peer-lang" id="peerLang"></div>
@@ -481,8 +492,58 @@ const flagMap={US:'🇺🇸',JP:'🇯🇵',KR:'🇰🇷',CN:'🇨🇳',GB:'🇬�
 let myLang=null,targetCountry=null,userId=localStorage.getItem('rgeo_uid')||crypto.randomUUID();
 let roomId=null,pc=null,localStream=null,matchCh=null,callCh=null;
 let isMuted=false,isCamOff=false,timerSec=0,timerIv=null;
-let ageGroup=null,gender=null;
-localStorage.setItem('rgeo_uid',userId);
+let avatarDataUrl=null;
+
+function previewAvatar(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    avatarDataUrl=ev.target.result;
+    document.getElementById('avatarPreview').src=avatarDataUrl;
+    document.getElementById('avatarPreview').style.display='block';
+    document.getElementById('avatarPlaceholder').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// 드래그 가능한 localVideo
+function initDraggable(){
+  const el=document.getElementById('localVideo');
+  let startX,startY,startLeft,startTop,isDragging=false;
+  const onStart=e=>{
+    isDragging=true;
+    const touch=e.touches?e.touches[0]:e;
+    startX=touch.clientX;startY=touch.clientY;
+    const rect=el.getBoundingClientRect();
+    startLeft=rect.left;startTop=rect.top;
+    el.style.transition='none';
+    e.preventDefault();
+  };
+  const onMove=e=>{
+    if(!isDragging)return;
+    const touch=e.touches?e.touches[0]:e;
+    const dx=touch.clientX-startX;
+    const dy=touch.clientY-startY;
+    const parent=el.parentElement.getBoundingClientRect();
+    let newLeft=startLeft+dx-parent.left;
+    let newTop=startTop+dy-parent.top;
+    newLeft=Math.max(8,Math.min(parent.width-el.offsetWidth-8,newLeft));
+    newTop=Math.max(8,Math.min(parent.height-el.offsetHeight-8,newTop));
+    el.style.left=newLeft+'px';
+    el.style.top=newTop+'px';
+    el.style.right='auto';el.style.bottom='auto';
+    e.preventDefault();
+  };
+  const onEnd=()=>{isDragging=false;el.style.transition='';};
+  el.addEventListener('touchstart',onStart,{passive:false});
+  el.addEventListener('touchmove',onMove,{passive:false});
+  el.addEventListener('touchend',onEnd);
+  el.addEventListener('mousedown',onStart);
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',onEnd);
+}
+initDraggable();
 
 // 스플래시 후 프로필 확인
 setTimeout(async()=>{
@@ -510,7 +571,15 @@ async function saveProfile(){
   const nickname=document.getElementById('nicknameInput').value.trim();
   if(!nickname){alert('닉네임을 입력해주세요');return;}
   if(!ageGroup){alert('나이대를 선택해주세요');return;}
-  await db.from('users').upsert({user_id:userId,nickname,age_group:ageGroup,gender:gender||'none',created_at:new Date().toISOString()});
+  await db.from('users').upsert({
+    user_id:userId,
+    nickname,
+    age_group:ageGroup,
+    gender:gender||'none',
+    avatar_url:avatarDataUrl||null,
+    created_at:new Date().toISOString()
+  });
+  if(avatarDataUrl) localStorage.setItem('rgeo_avatar',avatarDataUrl);
   show('onboard');
 }
 
@@ -520,7 +589,7 @@ function initRows(id,key){
       document.getElementById(id).querySelectorAll('.pick-row').forEach(r=>r.classList.remove('sel'));
       el.classList.add('sel');
       if(key==='lang') myLang=el.dataset.val; else targetCountry=el.dataset.val;
-      document.getElementById('connectBtn').disabled=!(myLang&&targetCountry);
+      if(myLang&&targetCountry) document.getElementById('connectWrap').style.display='block';
     });
   });
 }
@@ -528,6 +597,20 @@ initRows('langRows','lang');
 initRows('countryRows','country');
 document.getElementById('connectBtn').addEventListener('click',startMatch);
 document.getElementById('cancelBtn').addEventListener('click',cancelMatch);
+document.getElementById('testBtn').addEventListener('click',()=>{
+  const testRoom=crypto.randomUUID();
+  const fakePartner={target_country:'TEST',my_lang:'test'};
+  show('call');
+  document.getElementById('callAvatarFallback').textContent='🧪';
+  document.getElementById('peerName').textContent='테스트 연결';
+  document.getElementById('peerLang').textContent='P2P 테스트 모드';
+  timerSec=0;timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
+  navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(stream=>{
+    localStream=stream;
+    document.getElementById('localVideo').srcObject=stream;
+    document.getElementById('remoteVideo').srcObject=stream;
+  });
+});
 
 async function startMatch(){
   show('matching');
@@ -550,9 +633,16 @@ async function startMatch(){
 
 async function startCall(room,isInit,partner){
   roomId=room;show('call');
-  document.getElementById('peerFlag').textContent=flagMap[partner?.target_country]||'🌍';
   document.getElementById('peerName').textContent=partner?.target_country||'?';
   document.getElementById('peerLang').textContent=`${partner?.my_lang||''} 사용 중`;
+  // 상대방 프로필 사진
+  if(partner?.avatar_url){
+    document.getElementById('callAvatar').src=partner.avatar_url;
+    document.getElementById('callAvatar').style.display='block';
+    document.getElementById('callAvatarFallback').style.display='none';
+  } else {
+    document.getElementById('callAvatarFallback').textContent=flagMap[partner?.target_country]||'🌍';
+  }
   timerSec=0;timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
   localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
   document.getElementById('localVideo').srcObject=localStream;
@@ -571,9 +661,10 @@ async function startCall(room,isInit,partner){
 
 function toggleMute(){isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);document.getElementById('muteBtn').classList.toggle('off',isMuted);}
 function toggleCam(){isCamOff=!isCamOff;localStream?.getVideoTracks().forEach(t=>t.enabled=!isCamOff);document.getElementById('camBtn').classList.toggle('off',isCamOff);}
-async function endCall(){callCh?.send({type:'broadcast',event:'end',payload:{}});cleanup();}
+async function endCall(){callCh?.send({type:'broadcast',event:'end',payload:{}});const secs=timerSec;cleanupCall();showResult(secs);}
 async function cancelMatch(){await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
-function cleanup(){clearInterval(timerIv);pc?.close();pc=null;localStream?.getTracks().forEach(t=>t.stop());localStream=null;callCh?.unsubscribe();callCh=null;db.from('matching_pool').delete().eq('user_id',userId);show('setup');}
+function cleanupCall(){clearInterval(timerIv);pc?.close();pc=null;localStream?.getTracks().forEach(t=>t.stop());localStream=null;callCh?.unsubscribe();callCh=null;db.from('matching_pool').delete().eq('user_id',userId);}
+function cleanup(){cleanupCall();show('setup');}
 async function showDemandCards(){
   const demands=[
     {flag:'🇺🇸',text:'미국에서 <b>한국어</b> 쓰고 싶은 사람',count:null},
@@ -613,7 +704,76 @@ async function showDemandCards(){
   });
 }
 
+const FREE_LIMIT=600;
+const MIN_CALL_SEC=30;
+
+async function getDailyUsage(){
+  const{data}=await db.from('users').select('daily_seconds,last_reset,is_premium').eq('user_id',userId).single();
+  if(!data)return{seconds:0,isPremium:false};
+  const today=new Date().toISOString().slice(0,10);
+  if(data.last_reset!==today){
+    await db.from('users').update({daily_seconds:0,last_reset:today}).eq('user_id',userId);
+    return{seconds:0,isPremium:data.is_premium};
+  }
+  return{seconds:data.daily_seconds||0,isPremium:data.is_premium};
+}
+
+async function saveUsage(addSecs){
+  const{seconds}=await getDailyUsage();
+  const today=new Date().toISOString().slice(0,10);
+  const newSecs=Math.min(seconds+addSecs,FREE_LIMIT+600);
+  await db.from('users').update({daily_seconds:newSecs,last_reset:today}).eq('user_id',userId);
+  return newSecs;
+}
+
+async function showResult(callSecs){
+  let totalSecs=0;
+  if(callSecs>=MIN_CALL_SEC){
+    totalSecs=await saveUsage(callSecs);
+  } else {
+    const{seconds}=await getDailyUsage();
+    totalSecs=seconds;
+  }
+  const mins=Math.floor(callSecs/60);
+  const secs=callSecs%60;
+  const callTimeStr=mins>0?`${mins}분 ${secs}초`:`${secs}초`;
+  document.getElementById('resultTitle').textContent=callSecs<MIN_CALL_SEC?'연결이 짧게 끊겼어요':'통화가 끝났어요';
+  document.getElementById('resultDesc').textContent=callSecs<MIN_CALL_SEC?'30초 미만은 사용량에서 차감되지 않아요':`${callTimeStr} 동안 대화했어요`;
+  const pct=Math.min((totalSecs/FREE_LIMIT)*100,100);
+  document.getElementById('usageBar').style.width=pct+'%';
+  document.getElementById('usageBar').style.background=pct>=100?'#ef4444':'var(--blue)';
+  document.getElementById('usageText').textContent=`${Math.floor(totalSecs/60)} / 10분`;
+  document.getElementById('premiumCard').style.display=totalSecs>=FREE_LIMIT?'block':'none';
+  document.getElementById('resultEmoji').textContent=totalSecs>=FREE_LIMIT?'⏰':'👋';
+  show('result');
+}
+
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
 </script>
+<!-- RESULT -->
+<div class="screen" id="result">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 28px;">
+    <div style="font-size:48px;margin-bottom:20px;" id="resultEmoji">👋</div>
+    <div style="font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:8px;text-align:center;" id="resultTitle">통화가 끝났어요</div>
+    <div style="font-size:14px;color:var(--ink2);text-align:center;line-height:1.6;margin-bottom:36px;" id="resultDesc"></div>
+    <div style="width:100%;background:var(--bg);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);">오늘 사용량</div>
+        <div style="font-size:13px;color:var(--ink2);" id="usageText">0 / 10분</div>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:100px;overflow:hidden;">
+        <div id="usageBar" style="height:100%;background:var(--blue);border-radius:100px;transition:width .5s ease;width:0%;"></div>
+      </div>
+    </div>
+    <div id="premiumCard" style="display:none;width:100%;background:var(--blue);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">오늘 무료 시간을 다 썼어요</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px;">무제한으로 업그레이드하면 시간 제한 없이 만날 수 있어요</div>
+      <button style="width:100%;padding:14px;background:#fff;color:var(--blue);border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">월 9,900원으로 무제한 →</button>
+    </div>
+    <button class="btn-blue" onclick="show('setup')" style="width:100%;">새로운 친구 만나기</button>
+    <button onclick="show('setup')" style="margin-top:12px;font-size:14px;color:var(--ink3);background:none;border:none;font-family:inherit;cursor:pointer;padding:8px;">나중에</button>
+  </div>
+</div>
+
 </body>
 </html>
