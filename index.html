@@ -646,7 +646,13 @@ async function startCall(room,isInit,partner){
   timerSec=0;timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
   localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
   document.getElementById('localVideo').srcObject=localStream;
-  pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  pc=new RTCPeerConnection({iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+    {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
+  ]});
   localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
   pc.ontrack=e=>{document.getElementById('remoteVideo').srcObject=e.streams[0];};
   callCh=db.channel('call_'+roomId);
@@ -661,10 +667,40 @@ async function startCall(room,isInit,partner){
 
 function toggleMute(){isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);document.getElementById('muteBtn').classList.toggle('off',isMuted);}
 function toggleCam(){isCamOff=!isCamOff;localStream?.getVideoTracks().forEach(t=>t.enabled=!isCamOff);document.getElementById('camBtn').classList.toggle('off',isCamOff);}
-async function endCall(){callCh?.send({type:'broadcast',event:'end',payload:{}});const secs=timerSec;cleanupCall();showResult(secs);}
-async function cancelMatch(){await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
-function cleanupCall(){clearInterval(timerIv);pc?.close();pc=null;localStream?.getTracks().forEach(t=>t.stop());localStream=null;callCh?.unsubscribe();callCh=null;db.from('matching_pool').delete().eq('user_id',userId);}
-function cleanup(){cleanupCall();show('setup');}
+async function endCall(){
+  callCh?.send({type:'broadcast',event:'end',payload:{}});
+  const secs=timerSec;
+  cleanupCall();
+  showResult(secs); // 화면 먼저
+}
+
+async function showResult(callSecs){
+  // 화면 즉시 전환
+  document.getElementById('resultTitle').textContent=callSecs<MIN_CALL_SEC?'연결이 짧게 끊겼어요':'통화가 끝났어요';
+  const mins=Math.floor(callSecs/60);
+  const secs=callSecs%60;
+  document.getElementById('resultDesc').textContent=callSecs<MIN_CALL_SEC?'30초 미만은 사용량에서 차감되지 않아요':`${mins>0?mins+'분 '+secs+'초':secs+'초'} 동안 대화했어요`;
+  document.getElementById('resultEmoji').textContent='👋';
+  document.getElementById('premiumCard').style.display='none';
+  document.getElementById('usageBar').style.width='0%';
+  document.getElementById('usageText').textContent='계산 중...';
+  show('result');
+
+  // DB는 백그라운드에서
+  try {
+    let totalSecs=0;
+    if(callSecs>=MIN_CALL_SEC) totalSecs=await saveUsage(callSecs);
+    else { const{seconds}=await getDailyUsage(); totalSecs=seconds; }
+    const pct=Math.min((totalSecs/FREE_LIMIT)*100,100);
+    document.getElementById('usageBar').style.width=pct+'%';
+    document.getElementById('usageBar').style.background=pct>=100?'#ef4444':'var(--blue)';
+    document.getElementById('usageText').textContent=`${Math.floor(totalSecs/60)} / 10분`;
+    if(totalSecs>=FREE_LIMIT){
+      document.getElementById('premiumCard').style.display='block';
+      document.getElementById('resultEmoji').textContent='⏰';
+    }
+  } catch(e){ document.getElementById('usageText').textContent=''; }
+}
 async function showDemandCards(){
   const demands=[
     {flag:'🇺🇸',text:'미국에서 <b>한국어</b> 쓰고 싶은 사람',count:null},
@@ -726,29 +762,10 @@ async function saveUsage(addSecs){
   return newSecs;
 }
 
-async function showResult(callSecs){
-  let totalSecs=0;
-  if(callSecs>=MIN_CALL_SEC){
-    totalSecs=await saveUsage(callSecs);
-  } else {
-    const{seconds}=await getDailyUsage();
-    totalSecs=seconds;
-  }
-  const mins=Math.floor(callSecs/60);
-  const secs=callSecs%60;
-  const callTimeStr=mins>0?`${mins}분 ${secs}초`:`${secs}초`;
-  document.getElementById('resultTitle').textContent=callSecs<MIN_CALL_SEC?'연결이 짧게 끊겼어요':'통화가 끝났어요';
-  document.getElementById('resultDesc').textContent=callSecs<MIN_CALL_SEC?'30초 미만은 사용량에서 차감되지 않아요':`${callTimeStr} 동안 대화했어요`;
-  const pct=Math.min((totalSecs/FREE_LIMIT)*100,100);
-  document.getElementById('usageBar').style.width=pct+'%';
-  document.getElementById('usageBar').style.background=pct>=100?'#ef4444':'var(--blue)';
-  document.getElementById('usageText').textContent=`${Math.floor(totalSecs/60)} / 10분`;
-  document.getElementById('premiumCard').style.display=totalSecs>=FREE_LIMIT?'block':'none';
-  document.getElementById('resultEmoji').textContent=totalSecs>=FREE_LIMIT?'⏰':'👋';
-  show('result');
-}
-
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+async function cancelMatch(){await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
+function cleanupCall(){clearInterval(timerIv);pc?.close();pc=null;localStream?.getTracks().forEach(t=>t.stop());localStream=null;callCh?.unsubscribe();callCh=null;db.from('matching_pool').delete().eq('user_id',userId);}
+function cleanup(){cleanupCall();show('setup');}
 </script>
 <!-- RESULT -->
 <div class="screen" id="result">
