@@ -226,6 +226,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   cursor:default;touch-action:none;
   transition:all .5s cubic-bezier(.4,0,.2,1);
   z-index:4;
+  transform:scaleX(-1);
 }
 #localVideo.pip{
   top:110px;left:auto;right:16px;
@@ -233,6 +234,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   border-radius:18px;
   border:2px solid rgba(255,255,255,.2);
   cursor:grab;
+  transform:scaleX(-1);
 }
 #localVideo.pip:active{cursor:grabbing;}
 @keyframes blink2{0%,100%{opacity:.2;}50%{opacity:1;}}
@@ -503,6 +505,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
         </button>
         <span class="ctrl-label">카메라</span>
       </div>
+      <div class="ctrl-wrap">
+        <button class="ctrl-btn sm" onclick="switchCam()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/><path d="M8 4h.01"/></svg>
+        </button>
+        <span class="ctrl-label">전환</span>
+      </div>
     </div>
   </div>
 </div>
@@ -633,12 +641,12 @@ document.getElementById('testBtn').addEventListener('click',async()=>{
   clearInterval(timerIv);
   timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
   try{
-    localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    localStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     document.getElementById('localVideo').srcObject=localStream;
     setTimeout(()=>{
       if(!localStream)return;
-      document.getElementById('remoteVideo').srcObject=localStream;
       document.getElementById('remoteVideo').style.opacity='1';
+      document.getElementById('remoteVideo').style.background='#111';
       document.getElementById('localVideo').classList.add('pip');
       document.getElementById('waitingOverlay').style.display='none';
     },3000);
@@ -680,7 +688,7 @@ async function startCall(room,isInit,partner){
     document.getElementById('callAvatarFallback').textContent=flagMap[partner?.target_country]||'🌍';
   }
   timerSec=0;timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
-  localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  localStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   document.getElementById('localVideo').srcObject=localStream;
   document.getElementById('localVideo').classList.remove('pip');
   document.getElementById('waitingOverlay').style.display='flex';
@@ -718,6 +726,24 @@ async function startCall(room,isInit,partner){
 
 function toggleMute(){isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);document.getElementById('muteBtn').classList.toggle('off',isMuted);}
 function toggleCam(){isCamOff=!isCamOff;localStream?.getVideoTracks().forEach(t=>t.enabled=!isCamOff);document.getElementById('camBtn').classList.toggle('off',isCamOff);}
+
+let isFrontCam=true;
+async function switchCam(){
+  if(!localStream)return;
+  isFrontCam=!isFrontCam;
+  const newStream=await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:isFrontCam?'user':'environment'},
+    audio:true
+  });
+  const newVideoTrack=newStream.getVideoTracks()[0];
+  document.getElementById('localVideo').srcObject=newStream;
+  if(pc){
+    const sender=pc.getSenders().find(s=>s.track?.kind==='video');
+    if(sender) sender.replaceTrack(newVideoTrack);
+  }
+  localStream.getVideoTracks().forEach(t=>t.stop());
+  localStream=newStream;
+}
 async function endCall(){
   if(callCh) callCh?.send({type:'broadcast',event:'end',payload:{}});
   const secs=timerSec;
