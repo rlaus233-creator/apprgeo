@@ -15,6 +15,8 @@
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+@keyframes splashPop{0%{transform:scale(0);opacity:0;}100%{transform:scale(1);opacity:1;}}
+@keyframes splashFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 :root{
   --bg:#f8f8f8;
   --white:#ffffff;
@@ -180,8 +182,8 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   animation:slideIn .3s ease both;
 }
 @keyframes slideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.demand-flag{font-size:22px;flex-shrink:0;}
-.demand-text{flex:1;font-size:13px;color:var(--ink2);line-height:1.5;}
+.demand-flag{font-size:28px;flex-shrink:0;}
+.demand-text{flex:1;font-size:16px;color:var(--ink2);line-height:1.5;}
 .demand-text b{color:var(--ink);font-weight:600;}
 .demand-count{
   font-size:12px;font-weight:700;color:var(--blue);
@@ -271,7 +273,13 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 
 <!-- SPLASH -->
 <div class="screen on" id="splash">
-  <div class="sp-logo">rgeo</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <div style="width:88px;height:88px;border-radius:26px;background:linear-gradient(135deg,#3182f6,#1d4ed8);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 40px rgba(49,130,246,.35);animation:splashPop .6s cubic-bezier(.2,.8,.2,1.2);">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    </div>
+    <div class="sp-logo" style="animation:splashFade .6s .2s both;">rgeo</div>
+    <div style="font-size:14px;color:var(--ink2);animation:splashFade .6s .4s both;">전 세계 친구와 연결되는 시간</div>
+  </div>
 </div>
 
 <!-- LOGIN -->
@@ -478,10 +486,10 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 
     <!-- 자막 영역 -->
     <div id="mySubtitle" style="position:absolute;bottom:160px;left:12px;right:12px;text-align:center;pointer-events:none;z-index:10;display:none;">
-      <div style="display:inline-block;background:rgba(0,0,0,.75);color:#fff;font-size:15px;font-weight:500;padding:8px 16px;border-radius:12px;line-height:1.5;max-width:100%;" id="mySubtitleText"></div>
+      <div style="display:inline-block;background:rgba(0,0,0,.78);color:#fff;font-size:19px;font-weight:600;padding:12px 20px;border-radius:14px;line-height:1.5;max-width:100%;" id="mySubtitleText"></div>
     </div>
-    <div id="peerSubtitle" style="position:absolute;bottom:220px;left:12px;right:12px;text-align:center;pointer-events:none;z-index:10;display:none;">
-      <div style="display:inline-block;background:rgba(49,130,246,.85);color:#fff;font-size:15px;font-weight:500;padding:8px 16px;border-radius:12px;line-height:1.5;max-width:100%;" id="peerSubtitleText"></div>
+    <div id="peerSubtitle" style="position:absolute;bottom:224px;left:12px;right:12px;text-align:center;pointer-events:none;z-index:10;display:none;">
+      <div style="display:inline-block;background:rgba(49,130,246,.9);color:#fff;font-size:21px;font-weight:700;padding:12px 20px;border-radius:14px;line-height:1.5;max-width:100%;" id="peerSubtitleText"></div>
     </div>
 
     <div class="call-controls">
@@ -679,14 +687,8 @@ document.getElementById('testBtn').addEventListener('click',async()=>{
       document.getElementById('localVideo').classList.add('pip');
       document.getElementById('waitingOverlay').style.display='none';
 
-      // 테스트 모드 STT 시작 - 내 말 인식 후 영어로 번역해서 자막 표시
-      const myLangCode=countryToLang[navigator.language.split('-')[0]]||'ko';
-      startMySTT(localStream, myLangCode, myLangCode==='ko'?'en':'ko', true);
-
-      // 테스트용 - 번역된 자막을 내 화면에도 표시
-      const origSend=callCh?.send?.bind(callCh);
-      // callCh 없으니까 직접 자막 보여주기
-      const origStartSTT=startMySTT;
+      // 테스트 모드 STT 시작 - 무조건 한국어→영어 번역
+      startMySTT(localStream, 'ko', 'en', true);
     },3000);
   }catch(e){
     alert('카메라 권한이 필요해요');
@@ -765,7 +767,9 @@ async function startCall(room,isInit,partner){
   // STT 시작
   const myLangCode=myLang||'ko';
   const peerLangCode=countryToLang[partner?.target_country]||'en';
-  startMySTT(localStream, myLangCode, peerLangCode, false);
+  // 같은 언어면 번역 끄기
+  const needTranslation=myLangCode!==peerLangCode;
+  startMySTT(localStream, myLangCode, needTranslation?peerLangCode:myLangCode, false);
 }
 
 function toggleMute(){isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);document.getElementById('muteBtn').classList.toggle('off',isMuted);}
@@ -825,6 +829,9 @@ async function showResult(callSecs){
   document.getElementById('premiumCard').style.display='none';
   document.getElementById('usageBar').style.width='0%';
   document.getElementById('usageText').textContent='계산 중...';
+  // 별점 초기화
+  selectedRating=0;
+  document.querySelectorAll('.star').forEach(s=>{s.style.filter='grayscale(1)';s.style.opacity='.4';s.style.transform='scale(1)';});
   show('result');
 
   // DB는 백그라운드에서
@@ -843,39 +850,31 @@ async function showResult(callSecs){
   } catch(e){ document.getElementById('usageText').textContent=''; }
 }
 async function showDemandCards(){
-  const demands=[
-    {flag:'🇺🇸',text:'미국에서 <b>한국어</b> 쓰고 싶은 사람',count:null},
-    {flag:'🇯🇵',text:'일본에서 <b>영어</b> 배우고 싶은 사람',count:null},
-    {flag:'🇰🇷',text:'한국에서 <b>영어</b> 원어민 찾는 사람',count:null},
-    {flag:'🇫🇷',text:'프랑스에서 <b>일본어</b> 쓰고 싶은 사람',count:null},
-    {flag:'🇧🇷',text:'브라질에서 <b>한국어</b> 배우고 싶은 사람',count:null},
-  ];
+  const countryNames={US:'미국',JP:'일본',KR:'한국',CN:'중국',GB:'영국',DE:'독일',FR:'프랑스',BR:'브라질',AU:'호주',IN:'인도'};
 
-  // 실시간 DB에서 대기 수요 가져오기
-  const {data} = await db.from('matching_pool').select('target_country,my_lang').eq('status','waiting');
+  // 실시간 DB에서 대기 중인 사람들 나라별 카운트
+  const {data} = await db.from('matching_pool').select('target_country').eq('status','waiting');
   const counts={};
   (data||[]).forEach(r=>{
-    const key=`${r.target_country}_${r.my_lang}`;
-    counts[key]=(counts[key]||0)+1;
+    counts[r.target_country]=(counts[r.target_country]||0)+1;
   });
 
   const container=document.getElementById('demandCards');
   container.innerHTML='';
 
-  // 실제 수요 + 예시 수요 섞어서 표시
-  const realCards=(data||[]).slice(0,3).map(r=>({
-    flag:flagMap[r.target_country]||'🌍',
-    text:`<b>${r.target_country}</b>에서 <b>${r.my_lang}</b> 쓰고 싶은 사람`,
-    count:'대기 중'
+  // 인기 나라 몇 개 보여주기 (실제 대기자 우선)
+  const popularCountries=['US','JP','KR','FR','BR'];
+  const cards=popularCountries.slice(0,3).map(c=>({
+    flag:flagMap[c]||'🌍',
+    name:countryNames[c],
+    count:counts[c]||Math.floor(Math.random()*12)+1
   }));
 
-  const showCards=realCards.length>0?realCards:demands.slice(0,3).map(d=>({...d,count:`${Math.floor(Math.random()*8)+1}명`}));
-
-  showCards.forEach((d,i)=>{
+  cards.forEach((d,i)=>{
     setTimeout(()=>{
       const el=document.createElement('div');
       el.className='demand-card';
-      el.innerHTML=`<div class="demand-flag">${d.flag}</div><div class="demand-text">${d.text}</div><div class="demand-count">${d.count||'대기 중'}</div>`;
+      el.innerHTML=`<div class="demand-flag">${d.flag}</div><div class="demand-text"><b>${d.name}</b> 친구들이 기다려요</div><div class="demand-count">${d.count}명 대기</div>`;
       container.appendChild(el);
     },i*300);
   });
@@ -1016,6 +1015,21 @@ async function saveUsage(addSecs){
   return newSecs;
 }
 
+// 별점 평가
+let selectedRating=0;
+document.querySelectorAll('.star').forEach(star=>{
+  star.addEventListener('click',()=>{
+    selectedRating=parseInt(star.dataset.v);
+    document.querySelectorAll('.star').forEach(s=>{
+      if(parseInt(s.dataset.v)<=selectedRating){
+        s.style.filter='grayscale(0)';s.style.opacity='1';s.style.transform='scale(1.1)';
+      } else {
+        s.style.filter='grayscale(1)';s.style.opacity='.4';s.style.transform='scale(1)';
+      }
+    });
+  });
+});
+
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
 async function cancelMatch(){await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
 function cleanupCall(){
@@ -1031,25 +1045,41 @@ function cleanup(){cleanupCall();show('setup');}
 <!-- RESULT -->
 <div class="screen" id="result">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 28px;">
-    <div style="font-size:48px;margin-bottom:20px;" id="resultEmoji">👋</div>
-    <div style="font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:8px;text-align:center;" id="resultTitle">통화가 끝났어요</div>
-    <div style="font-size:14px;color:var(--ink2);text-align:center;line-height:1.6;margin-bottom:36px;" id="resultDesc"></div>
+    <div style="font-size:56px;margin-bottom:20px;" id="resultEmoji">👋</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-.04em;margin-bottom:8px;text-align:center;" id="resultTitle">대화가 끝났어요</div>
+    <div style="font-size:16px;color:var(--ink2);text-align:center;line-height:1.6;margin-bottom:32px;" id="resultDesc"></div>
+
+    <!-- 별점 평가 -->
+    <div id="ratingCard" style="width:100%;background:var(--bg);border-radius:var(--radius);padding:24px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:16px;font-weight:600;margin-bottom:16px;">대화는 어땠나요?</div>
+      <div style="display:flex;justify-content:center;gap:8px;" id="starRow">
+        <span class="star" data-v="1" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+        <span class="star" data-v="2" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+        <span class="star" data-v="3" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+        <span class="star" data-v="4" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+        <span class="star" data-v="5" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+      </div>
+    </div>
+
+    <!-- 사용량 -->
     <div style="width:100%;background:var(--bg);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:600;color:var(--ink);">오늘 사용량</div>
-        <div style="font-size:13px;color:var(--ink2);" id="usageText">0 / 10분</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ink);">오늘 사용량</div>
+        <div style="font-size:14px;color:var(--ink2);" id="usageText">0 / 10분</div>
       </div>
-      <div style="height:6px;background:var(--border);border-radius:100px;overflow:hidden;">
+      <div style="height:8px;background:var(--border);border-radius:100px;overflow:hidden;">
         <div id="usageBar" style="height:100%;background:var(--blue);border-radius:100px;transition:width .5s ease;width:0%;"></div>
       </div>
     </div>
-    <div id="premiumCard" style="display:none;width:100%;background:var(--blue);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
-      <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">오늘 무료 시간을 다 썼어요</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px;">무제한으로 업그레이드하면 시간 제한 없이 만날 수 있어요</div>
-      <button style="width:100%;padding:14px;background:#fff;color:var(--blue);border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">월 9,900원으로 무제한 →</button>
+
+    <div id="premiumCard" style="display:none;width:100%;background:linear-gradient(135deg,#3182f6,#1d4ed8);border-radius:var(--radius);padding:24px;margin-bottom:16px;">
+      <div style="font-size:17px;font-weight:700;color:#fff;margin-bottom:6px;">오늘 무료 시간을 다 썼어요</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:18px;line-height:1.5;">무제한으로 업그레이드하면<br>시간 제한 없이 만날 수 있어요</div>
+      <button style="width:100%;padding:16px;background:#fff;color:var(--blue);border:none;border-radius:14px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">월 9,900원으로 무제한 →</button>
     </div>
+
     <button class="btn-blue" onclick="show('setup')" style="width:100%;">새로운 친구 만나기</button>
-    <button onclick="show('setup')" style="margin-top:12px;font-size:14px;color:var(--ink3);background:none;border:none;font-family:inherit;cursor:pointer;padding:8px;">나중에</button>
+    <button onclick="show('setup')" style="margin-top:12px;font-size:15px;color:var(--ink3);background:none;border:none;font-family:inherit;cursor:pointer;padding:8px;">홈으로</button>
   </div>
 </div>
 
