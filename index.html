@@ -25,8 +25,8 @@
   --blue:#3182f6;
   --blue-light:#eff6ff;
   --blue-light2:#dbeafe;
-  --radius:16px;
-  --radius-sm:12px;
+  --radius:20px;
+  --radius-sm:16px;
 }
 html,body{height:100%;background:var(--white);}
 body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-width:430px;margin:0 auto;overflow:hidden;position:relative;}
@@ -54,12 +54,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 }
 .ob-chip-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);}
 .ob-title{
-  font-size:32px;font-weight:800;
+  font-size:38px;font-weight:800;
   line-height:1.2;letter-spacing:-.04em;
-  color:var(--ink);margin-bottom:12px;
+  color:var(--ink);margin-bottom:16px;
 }
 .ob-title span{color:var(--blue);}
-.ob-desc{font-size:16px;color:var(--ink2);line-height:1.65;font-weight:400;}
+.ob-desc{font-size:19px;color:var(--ink2);line-height:1.7;font-weight:400;}
 .ob-cards{
   display:flex;flex-direction:column;gap:8px;
   padding:32px 28px 0;
@@ -71,21 +71,21 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   border-radius:var(--radius);
 }
 .ob-icon{
-  width:44px;height:44px;border-radius:12px;
+  width:56px;height:56px;border-radius:16px;
   background:var(--white);
   display:flex;align-items:center;justify-content:center;
-  font-size:20px;flex-shrink:0;
+  font-size:26px;flex-shrink:0;
   box-shadow:0 1px 4px rgba(0,0,0,.06);
 }
 .ob-card-text{}
-.ob-card-title{font-size:14px;font-weight:600;margin-bottom:3px;}
-.ob-card-desc{font-size:13px;color:var(--ink2);}
+.ob-card-title{font-size:17px;font-weight:600;margin-bottom:4px;}
+.ob-card-desc{font-size:15px;color:var(--ink2);}
 .ob-bottom{padding:24px 28px 48px;}
 .btn-blue{
-  width:100%;padding:17px;
+  width:100%;padding:22px;
   background:var(--blue);color:#fff;
   border:none;border-radius:var(--radius);
-  font-size:16px;font-weight:700;
+  font-size:20px;font-weight:700;
   font-family:inherit;cursor:pointer;
   letter-spacing:-.02em;
   transition:all .12s;
@@ -108,33 +108,33 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 }
 .back-btn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .setup-title-wrap{padding:0 20px;margin-bottom:32px;}
-.setup-title{font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:1.2;margin-bottom:6px;}
-.setup-sub{font-size:14px;color:var(--ink2);}
+.setup-title{font-size:32px;font-weight:800;letter-spacing:-.04em;line-height:1.2;margin-bottom:8px;}
+.setup-sub{font-size:17px;color:var(--ink2);}
 
 .seg-label{
-  font-size:12px;font-weight:600;color:var(--ink3);
-  letter-spacing:.04em;padding:0 20px;margin-bottom:8px;
+  font-size:15px;font-weight:600;color:var(--ink3);
+  letter-spacing:.02em;padding:0 20px;margin-bottom:10px;
 }
 .pick-rows{display:flex;flex-direction:column;padding:0 20px;gap:2px;margin-bottom:24px;}
 .pick-row{
-  display:flex;align-items:center;gap:14px;
-  padding:14px 16px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;gap:16px;
+  padding:18px 18px;border-radius:var(--radius-sm);
   cursor:pointer;transition:background .1s;
 }
 .pick-row:active{background:var(--bg);}
 .pick-row.sel{background:var(--blue-light);}
-.pick-flag{font-size:24px;width:32px;text-align:center;flex-shrink:0;}
+.pick-flag{font-size:30px;width:38px;text-align:center;flex-shrink:0;}
 .pick-texts{flex:1;}
-.pick-name{font-size:15px;font-weight:600;color:var(--ink);}
-.pick-native{font-size:12px;color:var(--ink3);margin-top:1px;}
+.pick-name{font-size:19px;font-weight:600;color:var(--ink);}
+.pick-native{font-size:14px;color:var(--ink3);margin-top:2px;}
 .pick-radio{
-  width:20px;height:20px;border-radius:50%;
+  width:26px;height:26px;border-radius:50%;
   border:2px solid var(--border);
   flex-shrink:0;display:flex;align-items:center;justify-content:center;
   transition:all .12s;background:var(--white);
 }
 .pick-row.sel .pick-radio{border-color:var(--blue);background:var(--blue);}
-.pick-row.sel .pick-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff;}
+.pick-row.sel .pick-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff;}
 .pick-row.sel .pick-name{color:var(--blue);}
 .setup-bottom{
   position:sticky;bottom:0;
@@ -161,8 +161,8 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   display:flex;align-items:center;justify-content:center;
 }
 .match-icon{font-size:22px;}
-.match-h{font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:8px;text-align:center;}
-.match-p{font-size:14px;color:var(--ink2);line-height:1.6;text-align:center;margin-bottom:40px;}
+.match-h{font-size:28px;font-weight:800;letter-spacing:-.04em;margin-bottom:10px;text-align:center;}
+.match-p{font-size:17px;color:var(--ink2);line-height:1.6;text-align:center;margin-bottom:40px;}
 .match-tag{
   display:flex;align-items:center;gap:10px;
   padding:14px 18px;
@@ -171,7 +171,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 }
 .match-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;animation:blink 1.2s ease infinite;}
 @keyframes blink{0%,100%{opacity:.2;}50%{opacity:1;}}
-.match-tag-txt{font-size:13px;color:var(--ink2);font-weight:500;}
+.match-tag-txt{font-size:16px;color:var(--ink2);font-weight:500;}
 .demand-card{
   display:flex;align-items:center;gap:12px;
   padding:14px 16px;
@@ -391,21 +391,11 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     </button>
   </div>
   <div class="setup-title-wrap">
-    <div class="setup-title">어떻게 연결할까요?</div>
-    <div class="setup-sub">언어와 만나고 싶은 나라를 선택하세요</div>
+    <div class="setup-title">어느 나라 친구를<br>만나고 싶어요?</div>
+    <div class="setup-sub">나라를 선택하면 바로 연결돼요</div>
   </div>
 
-  <div class="seg-label">내가 사용할 언어</div>
-  <div class="pick-rows" id="langRows">
-    <div class="pick-row" data-val="ko"><span class="pick-flag">🇰🇷</span><div class="pick-texts"><div class="pick-name">한국어</div><div class="pick-native">Korean</div></div><div class="pick-radio"></div></div>
-    <div class="pick-row" data-val="en"><span class="pick-flag">🇺🇸</span><div class="pick-texts"><div class="pick-name">English</div><div class="pick-native">영어</div></div><div class="pick-radio"></div></div>
-    <div class="pick-row" data-val="ja"><span class="pick-flag">🇯🇵</span><div class="pick-texts"><div class="pick-name">日本語</div><div class="pick-native">일본어</div></div><div class="pick-radio"></div></div>
-    <div class="pick-row" data-val="zh"><span class="pick-flag">🇨🇳</span><div class="pick-texts"><div class="pick-name">中文</div><div class="pick-native">중국어</div></div><div class="pick-radio"></div></div>
-    <div class="pick-row" data-val="es"><span class="pick-flag">🇪🇸</span><div class="pick-texts"><div class="pick-name">Español</div><div class="pick-native">스페인어</div></div><div class="pick-radio"></div></div>
-    <div class="pick-row" data-val="fr"><span class="pick-flag">🇫🇷</span><div class="pick-texts"><div class="pick-name">Français</div><div class="pick-native">프랑스어</div></div><div class="pick-radio"></div></div>
-  </div>
-
-  <div class="seg-label">만나고 싶은 나라</div>
+  <div class="seg-label">나라 선택</div>
   <div class="pick-rows" id="countryRows">
     <div class="pick-row" data-val="US"><span class="pick-flag">🇺🇸</span><div class="pick-texts"><div class="pick-name">미국</div><div class="pick-native">United States</div></div><div class="pick-radio"></div></div>
     <div class="pick-row" data-val="JP"><span class="pick-flag">🇯🇵</span><div class="pick-texts"><div class="pick-name">일본</div><div class="pick-native">Japan</div></div><div class="pick-radio"></div></div>
@@ -486,6 +476,14 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <!-- 내 영상 (처음엔 전체화면, 연결되면 작은 박스로) -->
     <video id="localVideo" autoplay playsinline muted></video>
 
+    <!-- 자막 영역 -->
+    <div id="mySubtitle" style="position:absolute;bottom:160px;left:12px;right:12px;text-align:center;pointer-events:none;z-index:10;display:none;">
+      <div style="display:inline-block;background:rgba(0,0,0,.75);color:#fff;font-size:15px;font-weight:500;padding:8px 16px;border-radius:12px;line-height:1.5;max-width:100%;" id="mySubtitleText"></div>
+    </div>
+    <div id="peerSubtitle" style="position:absolute;bottom:220px;left:12px;right:12px;text-align:center;pointer-events:none;z-index:10;display:none;">
+      <div style="display:inline-block;background:rgba(49,130,246,.85);color:#fff;font-size:15px;font-weight:500;padding:8px 16px;border-radius:12px;line-height:1.5;max-width:100%;" id="peerSubtitleText"></div>
+    </div>
+
     <div class="call-controls">
       <div class="ctrl-wrap">
         <button class="ctrl-btn sm" id="muteBtn" onclick="toggleMute()">
@@ -519,8 +517,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 const DB_URL='https://qenuwywkrjsvxgurkcbe.supabase.co';
 const DB_KEY='sb_publishable_o7KC9YG-VnoqKMaWUauY5w_Ved962JU';
 const db=window.supabase.createClient(DB_URL,DB_KEY);
-const langMap={ko:'KR',en:'US',ja:'JP',zh:'CN',es:'ES',fr:'FR',de:'DE',pt:'BR'};
+
+const langToDeepL={ko:'KO',en:'EN',ja:'JA',zh:'ZH',es:'ES',fr:'FR',de:'DE',pt:'PT'};
+const countryToLang={KR:'ko',US:'en',JP:'ja',CN:'zh',GB:'en',DE:'de',FR:'fr',BR:'pt',AU:'en',IN:'en'};
 const flagMap={US:'🇺🇸',JP:'🇯🇵',KR:'🇰🇷',CN:'🇨🇳',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',BR:'🇧🇷',AU:'🇦🇺',IN:'🇮🇳'};
+
+let cameraDevices=[];
 let myLang=null,targetCountry=null,userId=localStorage.getItem('rgeo_uid')||crypto.randomUUID();
 let roomId=null,pc=null,localStream=null,matchCh=null,callCh=null;
 let isMuted=false,isCamOff=false,timerSec=0,timerIv=null;
@@ -577,8 +579,19 @@ function initDraggable(){
 }
 initDraggable();
 
-// 스플래시 후 프로필 확인
+// 앱 시작 시 카메라 목록만 가져오기 (권한 요청 없이)
+async function initPermissions(){
+  try{
+    // 이미 권한 있으면 목록 가져오기
+    const devices=await navigator.mediaDevices.enumerateDevices();
+    cameraDevices=devices.filter(d=>d.kind==='videoinput' && d.deviceId!=='');
+  }catch(e){
+    console.warn('기기 목록 조회 실패',e);
+  }
+}
+
 setTimeout(async()=>{
+  await initPermissions();
   const{data}=await db.from('users').select('*').eq('user_id',userId).single();
   if(data?.nickname) show('onboard');
   else show('login');
@@ -615,19 +628,32 @@ async function saveProfile(){
   show('onboard');
 }
 
+// 기기 언어 자동 감지
+const browserLang=navigator.language.split('-')[0];
+myLang=langToDeepL[browserLang]?browserLang:'ko';
+
 function initRows(id,key){
   document.getElementById(id).querySelectorAll('.pick-row').forEach(el=>{
     el.addEventListener('click',()=>{
       document.getElementById(id).querySelectorAll('.pick-row').forEach(r=>r.classList.remove('sel'));
       el.classList.add('sel');
-      if(key==='lang') myLang=el.dataset.val; else targetCountry=el.dataset.val;
-      if(myLang&&targetCountry) document.getElementById('connectWrap').style.display='block';
+      if(key==='country') targetCountry=el.dataset.val;
+      if(targetCountry) document.getElementById('connectWrap').style.display='block';
     });
   });
 }
-initRows('langRows','lang');
 initRows('countryRows','country');
-document.getElementById('connectBtn').addEventListener('click',startMatch);
+document.getElementById('connectBtn').addEventListener('click', async()=>{
+  // 연결 버튼 클릭 시 권한 요청
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    stream.getTracks().forEach(t=>t.stop());
+    await getCameras();
+    startMatch();
+  }catch(e){
+    alert('카메라와 마이크 권한이 필요해요.\n설정에서 권한을 허용해주세요.');
+  }
+});
 document.getElementById('cancelBtn').addEventListener('click',cancelMatch);
 document.getElementById('testBtn').addEventListener('click',async()=>{
   show('call');
@@ -720,54 +746,54 @@ async function startCall(room,isInit,partner){
     .on('broadcast',{event:'offer'},async({payload:p})=>{if(p.f===userId)return;await pc.setRemoteDescription(p.o);const a=await pc.createAnswer();await pc.setLocalDescription(a);callCh.send({type:'broadcast',event:'answer',payload:{a,f:userId}});})
     .on('broadcast',{event:'answer'},async({payload:p})=>{if(p.f===userId)return;await pc.setRemoteDescription(p.a);})
     .on('broadcast',{event:'ice'},async({payload:p})=>{if(p.f===userId)return;try{await pc.addIceCandidate(p.c);}catch(e){}})
+    .on('broadcast',{event:'subtitle'},({payload:p})=>{if(p.from===userId)return;showPeerSubtitle(p.text);})
     .on('broadcast',{event:'end'},()=>endCall())
     .subscribe(async()=>{if(isInit){const o=await pc.createOffer();await pc.setLocalDescription(o);callCh.send({type:'broadcast',event:'offer',payload:{o,f:userId}});}});
+
+  // STT 시작
+  const myLangCode=myLang||'ko';
+  const peerLangCode=countryToLang[partner?.target_country]||'en';
+  startMySTT(localStream, myLangCode, peerLangCode);
 }
 
 function toggleMute(){isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);document.getElementById('muteBtn').classList.toggle('off',isMuted);}
 function toggleCam(){isCamOff=!isCamOff;localStream?.getVideoTracks().forEach(t=>t.enabled=!isCamOff);document.getElementById('camBtn').classList.toggle('off',isCamOff);}
 
 let isFrontCam=true;
+
+async function getCameras(){
+  const devices=await navigator.mediaDevices.enumerateDevices();
+  cameraDevices=devices.filter(d=>d.kind==='videoinput');
+}
+
 async function switchCam(){
-  if(!localStream)return;
+  if(!localStream||cameraDevices.length<2)return;
   isFrontCam=!isFrontCam;
   try{
-    // 기존 비디오 트랙 먼저 완전히 중지
+    // 기존 오디오 트랙 유지, 비디오만 교체
+    const audioTrack=localStream.getAudioTracks()[0];
     localStream.getVideoTracks().forEach(t=>t.stop());
 
-    const newStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{exact:isFrontCam?'user':'environment'}},
-      audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
+    const idx=isFrontCam?0:cameraDevices.length-1;
+    const newVideoStream=await navigator.mediaDevices.getUserMedia({
+      video:{deviceId:{exact:cameraDevices[idx].deviceId}},
+      audio:false // 오디오 새로 요청 안 해요
     });
 
-    // 오디오 트랙은 기존 거 유지
-    const audioTrack=localStream.getAudioTracks()[0];
-    if(audioTrack) newStream.addTrack(audioTrack);
+    const newVideoTrack=newVideoStream.getVideoTracks()[0];
 
+    // 기존 스트림에 새 비디오 트랙 합치기
+    const newStream=new MediaStream([newVideoTrack, audioTrack].filter(Boolean));
     document.getElementById('localVideo').srcObject=newStream;
 
     if(pc){
       const sender=pc.getSenders().find(s=>s.track?.kind==='video');
-      if(sender) await sender.replaceTrack(newStream.getVideoTracks()[0]);
+      if(sender) await sender.replaceTrack(newVideoTrack);
     }
     localStream=newStream;
   }catch(e){
-    // exact 실패하면 일반 facingMode로 재시도
-    try{
-      const newStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:isFrontCam?'user':'environment'},
-        audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
-      });
-      document.getElementById('localVideo').srcObject=newStream;
-      if(pc){
-        const sender=pc.getSenders().find(s=>s.track?.kind==='video');
-        if(sender) await sender.replaceTrack(newStream.getVideoTracks()[0]);
-      }
-      localStream=newStream;
-    }catch(e2){
-      isFrontCam=!isFrontCam;
-      console.error('카메라 전환 실패',e2);
-    }
+    isFrontCam=!isFrontCam;
+    console.error('카메라 전환 실패',e);
   }
 }
 async function endCall(){
@@ -843,7 +869,78 @@ async function showDemandCards(){
   });
 }
 
-const FREE_LIMIT=600;
+const DEEPGRAM_KEY='7d034d27e9049c04af2cace8a0a4aa2c41a797e9';
+const DEEPL_KEY='19AGhwVLLBBVk4zVB';
+
+let myDgSocket=null;
+let peerDgSocket=null;
+let subtitleTimeout=null;
+let peerSubtitleTimeout=null;
+
+async function translateText(text, sourceLang, targetLang){
+  if(sourceLang===targetLang)return text;
+  try{
+    const res=await fetch(`https://api-free.deepl.com/v2/translate`,{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:new URLSearchParams({
+        auth_key:DEEPL_KEY,
+        text,
+        source_lang:langToDeepL[sourceLang]||'EN',
+        target_lang:langToDeepL[targetLang]||'KO'
+      })
+    });
+    const data=await res.json();
+    return data.translations?.[0]?.text||text;
+  }catch(e){return text;}
+}
+
+function showMySubtitle(text){
+  const el=document.getElementById('mySubtitle');
+  document.getElementById('mySubtitleText').textContent=text;
+  el.style.display='block';
+  clearTimeout(subtitleTimeout);
+  subtitleTimeout=setTimeout(()=>el.style.display='none',4000);
+}
+
+function showPeerSubtitle(text){
+  const el=document.getElementById('peerSubtitle');
+  document.getElementById('peerSubtitleText').textContent=text;
+  el.style.display='block';
+  clearTimeout(peerSubtitleTimeout);
+  peerSubtitleTimeout=setTimeout(()=>el.style.display='none',4000);
+}
+
+function startMySTT(stream, myLangCode, peerLangCode){
+  if(myDgSocket) myDgSocket.close();
+  const ws=new WebSocket(`wss://api.deepgram.com/v1/listen?language=${myLangCode}&punctuate=true&interim_results=false`,['token',DEEPGRAM_KEY]);
+  ws.onopen=()=>{
+    const recorder=new MediaRecorder(stream,{mimeType:'audio/webm'});
+    recorder.ondataavailable=e=>{if(ws.readyState===1&&e.data.size>0)ws.send(e.data);};
+    recorder.start(250);
+    myDgSocket._recorder=recorder;
+  };
+  ws.onmessage=async e=>{
+    const d=JSON.parse(e.data);
+    const text=d.channel?.alternatives?.[0]?.transcript;
+    if(!text||!d.is_final)return;
+    // 내 자막 (원문)
+    showMySubtitle(text);
+    // 번역해서 상대방 채널로 전송
+    const translated=await translateText(text, myLangCode, peerLangCode);
+    if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+  };
+  ws.onerror=e=>console.error('STT 에러',e);
+  myDgSocket=ws;
+}
+
+function stopSTT(){
+  if(myDgSocket){
+    myDgSocket._recorder?.stop();
+    myDgSocket.close();
+    myDgSocket=null;
+  }
+}
 const MIN_CALL_SEC=30;
 
 async function getDailyUsage(){
@@ -867,7 +964,14 @@ async function saveUsage(addSecs){
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
 async function cancelMatch(){await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
-function cleanupCall(){clearInterval(timerIv);pc?.close();pc=null;localStream?.getTracks().forEach(t=>t.stop());localStream=null;callCh?.unsubscribe();callCh=null;db.from('matching_pool').delete().eq('user_id',userId);}
+function cleanupCall(){
+  stopSTT();
+  clearInterval(timerIv);
+  pc?.close();pc=null;
+  localStream?.getTracks().forEach(t=>t.stop());localStream=null;
+  callCh?.unsubscribe();callCh=null;
+  db.from('matching_pool').delete().eq('user_id',userId);
+}
 function cleanup(){cleanupCall();show('setup');}
 </script>
 <!-- RESULT -->
