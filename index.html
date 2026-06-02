@@ -659,7 +659,7 @@ document.getElementById('testBtn').addEventListener('click',async()=>{
   show('call');
   document.getElementById('callAvatarFallback').textContent='🧪';
   document.getElementById('peerName').textContent='테스트 모드';
-  document.getElementById('peerLang').textContent='P2P 연결 테스트';
+  document.getElementById('peerLang').textContent='STT + 번역 테스트';
   document.getElementById('waitingOverlay').style.display='flex';
   document.getElementById('remoteVideo').style.opacity='0';
   document.getElementById('localVideo').classList.remove('pip');
@@ -667,7 +667,10 @@ document.getElementById('testBtn').addEventListener('click',async()=>{
   clearInterval(timerIv);
   timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
   try{
-    localStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    localStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'user'},
+      audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
+    });
     document.getElementById('localVideo').srcObject=localStream;
     setTimeout(()=>{
       if(!localStream)return;
@@ -675,6 +678,15 @@ document.getElementById('testBtn').addEventListener('click',async()=>{
       document.getElementById('remoteVideo').style.background='#111';
       document.getElementById('localVideo').classList.add('pip');
       document.getElementById('waitingOverlay').style.display='none';
+
+      // 테스트 모드 STT 시작 - 내 말 인식 후 영어로 번역해서 자막 표시
+      const myLangCode=countryToLang[navigator.language.split('-')[0]]||'ko';
+      startMySTT(localStream, myLangCode, myLangCode==='ko'?'en':'ko', true);
+
+      // 테스트용 - 번역된 자막을 내 화면에도 표시
+      const origSend=callCh?.send?.bind(callCh);
+      // callCh 없으니까 직접 자막 보여주기
+      const origStartSTT=startMySTT;
     },3000);
   }catch(e){
     alert('카메라 권한이 필요해요');
@@ -753,7 +765,7 @@ async function startCall(room,isInit,partner){
   // STT 시작
   const myLangCode=myLang||'ko';
   const peerLangCode=countryToLang[partner?.target_country]||'en';
-  startMySTT(localStream, myLangCode, peerLangCode);
+  startMySTT(localStream, myLangCode, peerLangCode, false);
 }
 
 function toggleMute(){isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);document.getElementById('muteBtn').classList.toggle('off',isMuted);}
@@ -911,24 +923,30 @@ function showPeerSubtitle(text){
   peerSubtitleTimeout=setTimeout(()=>el.style.display='none',4000);
 }
 
-function startMySTT(stream, myLangCode, peerLangCode){
+function startMySTT(stream, myLangCode, peerLangCode, isTestMode=false){
   if(myDgSocket) myDgSocket.close();
   const ws=new WebSocket(`wss://api.deepgram.com/v1/listen?language=${myLangCode}&punctuate=true&interim_results=false`,['token',DEEPGRAM_KEY]);
   ws.onopen=()=>{
     const recorder=new MediaRecorder(stream,{mimeType:'audio/webm'});
     recorder.ondataavailable=e=>{if(ws.readyState===1&&e.data.size>0)ws.send(e.data);};
     recorder.start(250);
-    myDgSocket._recorder=recorder;
+    ws._recorder=recorder;
   };
   ws.onmessage=async e=>{
     const d=JSON.parse(e.data);
     const text=d.channel?.alternatives?.[0]?.transcript;
     if(!text||!d.is_final)return;
-    // 내 자막 (원문)
+    // 내 원문 자막
     showMySubtitle(text);
-    // 번역해서 상대방 채널로 전송
+    // 번역
     const translated=await translateText(text, myLangCode, peerLangCode);
-    if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+    if(isTestMode){
+      // 테스트 모드: 번역 결과를 상대방 자막으로 보여줌
+      showPeerSubtitle(translated);
+    } else {
+      // 실제 통화: 채널로 전송
+      if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+    }
   };
   ws.onerror=e=>console.error('STT 에러',e);
   myDgSocket=ws;
