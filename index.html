@@ -640,6 +640,22 @@ setTimeout(async()=>{
 
 function goProfile(){show('profile');}
 
+// 프로필 화면 진입 시 구글 정보 미리 채우기
+async function prefillProfile(){
+  const{data:{session}}=await db.auth.getSession();
+  if(session?.user){
+    const meta=session.user.user_metadata||{};
+    const nickInput=document.getElementById('nicknameInput');
+    if(meta.full_name && !nickInput.value) nickInput.value=meta.full_name.slice(0,12);
+    if(meta.avatar_url){
+      avatarDataUrl=meta.avatar_url;
+      document.getElementById('avatarPreview').src=meta.avatar_url;
+      document.getElementById('avatarPreview').style.display='block';
+      document.getElementById('avatarPlaceholder').style.display='none';
+    }
+  }
+}
+
 // 구글 로그인
 async function loginWithGoogle(){
   const{error}=await db.auth.signInWithOAuth({
@@ -653,17 +669,46 @@ async function loginWithGoogle(){
 async function checkAuthSession(){
   const{data:{session}}=await db.auth.getSession();
   if(session?.user){
-    // 구글 로그인 성공 - 구글 user id를 userId로 사용
     const googleId=session.user.id;
     userId=googleId;
     localStorage.setItem('rgeo_uid',googleId);
-    // 구글 프로필 사진·이름 기본값으로 가져오기
     const meta=session.user.user_metadata||{};
     if(meta.avatar_url && !avatarDataUrl) avatarDataUrl=meta.avatar_url;
     return {loggedIn:true, name:meta.full_name||meta.name, avatar:meta.avatar_url};
   }
   return {loggedIn:false};
 }
+
+// 로그인 후 화면 라우팅
+async function routeAfterAuth(){
+  const{data}=await db.from('users').select('*').eq('user_id',userId).single();
+  if(data?.banned){
+    document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;padding:40px;text-align:center;font-family:Pretendard,sans-serif;background:#fff;"><div style="font-size:48px;margin-bottom:20px;">🚫</div><div style="font-size:20px;font-weight:700;color:#111;margin-bottom:10px;">이용이 제한된 계정입니다</div><div style="font-size:14px;color:#888;line-height:1.6;">부적절한 행동으로 신고가 누적되어<br>서비스 이용이 제한되었습니다.<br><br>문의: rgeo.labs@gmail.com</div></div>';
+    return;
+  }
+  if(data?.nickname){
+    const today=new Date().toISOString().slice(0,10);
+    const update={last_active:new Date().toISOString()};
+    if(!data.first_active) update.first_active=today;
+    try{ db.from('users').update(update).eq('user_id',userId); }catch(e){}
+    show('onboard');
+  } else {
+    // 로그인은 됐지만 프로필 없음 → 프로필 설정으로
+    show('profile');
+    prefillProfile();
+  }
+}
+
+// 로그인 상태 변화 감지 (구글 리다이렉트 후 자동 처리)
+db.auth.onAuthStateChange((event, session)=>{
+  if(event==='SIGNED_IN' && session?.user){
+    userId=session.user.id;
+    localStorage.setItem('rgeo_uid',userId);
+    const meta=session.user.user_metadata||{};
+    if(meta.avatar_url && !avatarDataUrl) avatarDataUrl=meta.avatar_url;
+    routeAfterAuth();
+  }
+});
 
 // 나이·성별 그리드
 function initSimpleGrid(id,setter){
