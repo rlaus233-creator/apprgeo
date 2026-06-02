@@ -242,8 +242,8 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 @keyframes blink2{0%,100%{opacity:.2;}50%{opacity:1;}}
 .call-controls{
   position:absolute;bottom:0;left:0;right:0;
-  padding:0 36px 52px;
-  display:flex;justify-content:center;align-items:center;gap:28px;
+  padding:0 16px 52px;
+  display:flex;justify-content:center;align-items:center;gap:14px;
 }
 .ctrl-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
 .ctrl-btn{
@@ -253,19 +253,19 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 }
 .ctrl-btn:active{transform:scale(.9);}
 .ctrl-btn.sm{
-  width:56px;height:56px;
+  width:52px;height:52px;
   background:rgba(255,255,255,.15);
   backdrop-filter:blur(16px);
   border:1px solid rgba(255,255,255,.2);
 }
 .ctrl-btn.sm.off{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.3);}
 .ctrl-btn.lg{
-  width:70px;height:70px;
+  width:64px;height:64px;
   background:#ef4444;
 }
 .ctrl-btn svg{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-.ctrl-btn.sm svg{width:22px;height:22px;}
-.ctrl-btn.lg svg{width:26px;height:26px;}
+.ctrl-btn.sm svg{width:20px;height:20px;}
+.ctrl-btn.lg svg{width:24px;height:24px;}
 .ctrl-label{font-size:11px;color:rgba(255,255,255,.45);font-weight:500;}
 </style>
 </head>
@@ -524,6 +524,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
           <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
         </button>
         <span class="ctrl-label">카메라</span>
+      </div>
+      <div class="ctrl-wrap">
+        <button class="ctrl-btn sm" onclick="switchCam()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/><path d="M8 4h.01"/></svg>
+        </button>
+        <span class="ctrl-label">전환</span>
       </div>
       <div class="ctrl-wrap">
         <button class="ctrl-btn sm" id="subBtn" onclick="toggleSubtitle()">
