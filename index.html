@@ -358,35 +358,17 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   </div>
 </div>
 <div class="screen" id="onboard">
-  <div class="ob-hero">
-    <div class="ob-chip"><div class="ob-chip-dot"></div>언어 수요 매칭</div>
-    <div class="ob-title">내가 원하는 언어로<br><span>전세계 친구</span>를<br>만나요</div>
-    <div class="ob-desc">한국어 쓰고 싶은 미국인,<br>영어 쓰고 싶은 한국인.<br>딱 맞는 수요끼리 연결해드려요.</div>
+  <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+    <source src="onboard.mp4" type="video/mp4">
+  </video>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.2) 40%,rgba(0,0,0,.85) 100%);z-index:1;"></div>
+
+  <div class="ob-hero" style="position:relative;z-index:2;">
+    <div class="ob-chip" style="background:rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(8px);"><div class="ob-chip-dot" style="background:#fff;"></div>언어 수요 매칭</div>
+    <div class="ob-title" style="color:#fff;">내가 원하는 언어로<br><span style="color:#7eb6ff;">전세계 친구</span>를<br>만나요</div>
+    <div class="ob-desc" style="color:rgba(255,255,255,.85);">한국어 쓰고 싶은 미국인,<br>영어 쓰고 싶은 한국인.<br>딱 맞는 수요끼리 연결해드려요.</div>
   </div>
-  <div class="ob-cards">
-    <div class="ob-card">
-      <div class="ob-icon">🌍</div>
-      <div class="ob-card-text">
-        <div class="ob-card-title">전세계 언어 매칭</div>
-        <div class="ob-card-desc">수요가 맞는 상대를 즉시 연결해요</div>
-      </div>
-    </div>
-    <div class="ob-card">
-      <div class="ob-icon">🎥</div>
-      <div class="ob-card-text">
-        <div class="ob-card-title">실시간 영상통화</div>
-        <div class="ob-card-desc">얼굴 보며 진짜 대화를 나눠요</div>
-      </div>
-    </div>
-    <div class="ob-card">
-      <div class="ob-icon">✈️</div>
-      <div class="ob-card-text">
-        <div class="ob-card-title">글로벌 네트워크</div>
-        <div class="ob-card-desc">여행·교류로 이어지는 연결</div>
-      </div>
-    </div>
-  </div>
-  <div class="ob-bottom">
+  <div class="ob-bottom" style="position:relative;z-index:2;">
     <button class="btn-blue" onclick="show('setup')">시작하기</button>
   </div>
 </div>
