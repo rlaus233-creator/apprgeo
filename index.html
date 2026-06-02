@@ -430,7 +430,25 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <div class="match-tag-txt" id="matchInfo">매칭 중...</div>
   </div>
 
-  <div id="demandCards" style="width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:28px;"></div>
+  <!-- 광고 영역 (프리미엄 아닐 때만) -->
+  <div id="adZone" style="width:100%;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:11px;color:var(--ink3);font-weight:600;letter-spacing:.08em;">SPONSORED</span>
+      <span style="font-size:11px;color:var(--ink3);" id="adCountdown"></span>
+    </div>
+    <div id="adContent" style="width:100%;height:180px;background:linear-gradient(135deg,#FF8E72,#FF6B4A);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px;">
+      <div style="font-size:20px;font-weight:800;margin-bottom:6px;">RGEO Labs</div>
+      <div style="font-size:13px;opacity:.9;">전세계를 연결하는 기술</div>
+    </div>
+  </div>
+
+  <!-- 프리미엄 유도 -->
+  <button id="goPremiumBtn" style="width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    광고 없이 우선 매칭하기
+  </button>
+
+  <div id="demandCards" style="width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
 
   <button id="cancelBtn" style="font-size:14px;font-weight:600;color:var(--ink2);background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;cursor:pointer;padding:14px 48px;">취소</button>
 
@@ -678,6 +696,30 @@ document.getElementById('connectBtn').addEventListener('click', async()=>{
   }
 });
 document.getElementById('cancelBtn').addEventListener('click',cancelMatch);
+
+// 광고 카운트다운 (애드몹 자리 - 지금은 자체 홍보)
+let adTimer=null;
+function startAdCountdown(){
+  let sec=5;
+  const el=document.getElementById('adCountdown');
+  el.textContent=`${sec}초 후 광고 닫기`;
+  clearInterval(adTimer);
+  adTimer=setInterval(()=>{
+    sec--;
+    if(sec>0){
+      el.textContent=`${sec}초 후 광고 닫기`;
+    } else {
+      el.textContent='';
+      clearInterval(adTimer);
+    }
+  },1000);
+}
+
+// 프리미엄 버튼
+document.getElementById('goPremiumBtn').addEventListener('click',()=>{
+  toast('프리미엄은 앱 출시 후 이용 가능해요');
+  // 추후: 결제 연동 → is_premium=true → 광고 제거 + 우선매칭
+});
 document.getElementById('testBtn').addEventListener('click',async()=>{
   show('call');
   document.getElementById('callAvatarFallback').textContent='🧪';
@@ -717,13 +759,28 @@ async function startMatch(){
   document.getElementById('matchInfo').textContent=`${flagMap[targetCountry]||''} ${targetCountry} 친구 찾는 중`;
   showDemandCards();
 
-  // 내 정보 매칭 풀에 등록 (내 나라 + 원하는 나라)
+  // 프리미엄 여부 확인 - 광고 표시 결정
+  const{data:me}=await db.from('users').select('is_premium').eq('user_id',userId).single();
+  const isPremium=me?.is_premium||false;
+  const adZone=document.getElementById('adZone');
+  const premBtn=document.getElementById('goPremiumBtn');
+  if(isPremium){
+    adZone.style.display='none';
+    premBtn.style.display='none';
+  } else {
+    adZone.style.display='block';
+    premBtn.style.display='flex';
+    startAdCountdown();
+  }
+
+  // 내 정보 매칭 풀에 등록 (프리미엄이면 우선순위 표시)
   await db.from('matching_pool').upsert({
     user_id:userId,
     my_lang:myLang,
     my_country:savedCountry,
     target_country:targetCountry,
     status:'waiting',
+    is_premium:isPremium,
     created_at:new Date().toISOString()
   });
 
@@ -734,13 +791,15 @@ async function startMatch(){
   const{data:bannedUsers}=await db.from('users').select('user_id').eq('banned',true);
   const bannedIds=(bannedUsers||[]).map(u=>u.user_id);
 
-  // 상대 찾기
+  // 상대 찾기 - 프리미엄 우선, 그 다음 오래 기다린 순
   let{data:matches}=await db.from('matching_pool')
     .select('*')
     .eq('my_country',targetCountry)
     .eq('target_country',savedCountry)
     .eq('status','waiting')
     .neq('user_id',userId)
+    .order('is_premium',{ascending:false})
+    .order('created_at',{ascending:true})
     .limit(10);
 
   // 차단·밴 사용자 제외
@@ -759,7 +818,7 @@ async function startMatch(){
 }
 
 async function startCall(room,isInit,partner){
-  roomId=room;show('call');
+  roomId=room;clearInterval(adTimer);show('call');
   lastPartnerId=partner?.user_id||null;
   lastPartnerCountry=partner?.my_country||partner?.target_country||null;
   document.getElementById('peerName').textContent=partner?.target_country||'?';
@@ -1180,7 +1239,7 @@ function show(id){
     }
   }
 }
-async function cancelMatch(){await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
+async function cancelMatch(){clearInterval(adTimer);await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
 function cleanupCall(){
   stopSTT();
   clearInterval(timerIv);
