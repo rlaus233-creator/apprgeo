@@ -242,8 +242,8 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 @keyframes blink2{0%,100%{opacity:.2;}50%{opacity:1;}}
 .call-controls{
   position:absolute;bottom:0;left:0;right:0;
-  padding:0 36px 52px;
-  display:flex;justify-content:center;align-items:center;gap:28px;
+  padding:0 16px 52px;
+  display:flex;justify-content:center;align-items:center;gap:14px;
 }
 .ctrl-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
 .ctrl-btn{
@@ -253,19 +253,19 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 }
 .ctrl-btn:active{transform:scale(.9);}
 .ctrl-btn.sm{
-  width:56px;height:56px;
+  width:52px;height:52px;
   background:rgba(255,255,255,.15);
   backdrop-filter:blur(16px);
   border:1px solid rgba(255,255,255,.2);
 }
 .ctrl-btn.sm.off{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.3);}
 .ctrl-btn.lg{
-  width:70px;height:70px;
+  width:64px;height:64px;
   background:#ef4444;
 }
 .ctrl-btn svg{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-.ctrl-btn.sm svg{width:22px;height:22px;}
-.ctrl-btn.lg svg{width:26px;height:26px;}
+.ctrl-btn.sm svg{width:20px;height:20px;}
+.ctrl-btn.lg svg{width:24px;height:24px;}
 .ctrl-label{font-size:11px;color:rgba(255,255,255,.45);font-weight:500;}
 </style>
 </head>
@@ -288,11 +288,11 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
       <div style="font-size:15px;color:var(--ink2);line-height:1.7;">언어를 몰라도 괜찮아요.<br>얼굴 보며 실시간 번역으로 대화해요.</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button onclick="goProfile()" style="width:100%;padding:16px;background:#fff;border:1.5px solid #e5e7eb;border-radius:var(--radius);font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .12s;">
+      <button onclick="loginWithGoogle()" style="width:100%;padding:16px;background:#fff;border:1.5px solid #e5e7eb;border-radius:var(--radius);font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .12s;">
         <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Google로 계속하기
       </button>
-      <button onclick="goProfile()" style="width:100%;padding:16px;background:#000;border:none;border-radius:var(--radius);font-family:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .12s;">
+      <button onclick="toast('Apple 로그인은 준비 중이에요')" style="width:100%;padding:16px;background:#000;border:none;border-radius:var(--radius);font-family:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .12s;">
         <svg width="18" height="22" viewBox="0 0 814 1000" fill="#fff"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663.6 0 541.8 0 347.4 126.4 247.5 250.8 247.5c66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99zM549.8 148.8c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/></svg>
         Apple로 계속하기
       </button>
@@ -370,15 +370,16 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <button class="btn-blue" onclick="saveProfile()">시작하기</button>
   </div>
 </div>
-<div class="screen" id="onboard" style="background:linear-gradient(160deg,#FF8E72 0%,#FF6B4A 100%);">
-  <video id="onboardVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:linear-gradient(160deg,#FF8E72,#FF6B4A);">
-    <source src="onboard.mp4" type="video/mp4">
+<div class="screen" id="onboard" style="background:#1a1a1a;">
+  <img src="onboard.jpg?v=3" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+  <video id="onboardVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="onboard.jpg?v=3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+    <source src="onboard.mp4?v=3" type="video/mp4">
   </video>
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.1) 40%,rgba(20,10,5,.75) 100%);z-index:1;"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,transparent 35%,rgba(0,0,0,.6) 100%);z-index:1;"></div>
 
   <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 32px 56px;">
-    <div style="font-size:72px;font-weight:800;letter-spacing:-.06em;color:#fff;line-height:1;margin-bottom:20px;text-shadow:0 4px 24px rgba(0,0,0,.3);">RGEO</div>
-    <div style="font-size:19px;font-weight:500;color:rgba(255,255,255,.92);line-height:1.6;margin-bottom:40px;text-shadow:0 2px 12px rgba(0,0,0,.4);">언어를 몰라도 괜찮아요.<br>전세계 친구와 얼굴 보며 대화해요.</div>
+    <div style="font-size:72px;font-weight:800;letter-spacing:-.06em;color:#fff;line-height:1;margin-bottom:20px;text-shadow:0 4px 24px rgba(0,0,0,.5);">RGEO</div>
+    <div style="font-size:19px;font-weight:500;color:rgba(255,255,255,.92);line-height:1.6;margin-bottom:40px;text-shadow:0 2px 12px rgba(0,0,0,.6);">언어를 몰라도 괜찮아요.<br>전세계 친구와 얼굴 보며 대화해요.</div>
     <button class="btn-blue" onclick="show('setup')" style="background:#fff;color:#FF6B4A;">시작하기</button>
   </div>
 </div>
@@ -429,7 +430,25 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <div class="match-tag-txt" id="matchInfo">매칭 중...</div>
   </div>
 
-  <div id="demandCards" style="width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:28px;"></div>
+  <!-- 광고 영역 (프리미엄 아닐 때만) -->
+  <div id="adZone" style="width:100%;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:11px;color:var(--ink3);font-weight:600;letter-spacing:.08em;">SPONSORED</span>
+      <span style="font-size:11px;color:var(--ink3);" id="adCountdown"></span>
+    </div>
+    <div id="adContent" style="width:100%;height:180px;background:linear-gradient(135deg,#FF8E72,#FF6B4A);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px;">
+      <div style="font-size:20px;font-weight:800;margin-bottom:6px;">RGEO Labs</div>
+      <div style="font-size:13px;opacity:.9;">전세계를 연결하는 기술</div>
+    </div>
+  </div>
+
+  <!-- 프리미엄 유도 -->
+  <button id="goPremiumBtn" style="width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    광고 없이 우선 매칭하기
+  </button>
+
+  <div id="demandCards" style="width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
 
   <button id="cancelBtn" style="font-size:14px;font-weight:600;color:var(--ink2);background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;cursor:pointer;padding:14px 48px;">취소</button>
 
@@ -507,6 +526,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
         <span class="ctrl-label">카메라</span>
       </div>
       <div class="ctrl-wrap">
+        <button class="ctrl-btn sm" onclick="switchCam()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/><path d="M8 4h.01"/></svg>
+        </button>
+        <span class="ctrl-label">전환</span>
+      </div>
+      <div class="ctrl-wrap">
         <button class="ctrl-btn sm" id="subBtn" onclick="toggleSubtitle()">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="6" y1="11" x2="10" y2="11"/><line x1="14" y1="11" x2="18" y2="11"/><line x1="6" y1="15" x2="14" y2="15"/></svg>
         </button>
@@ -519,7 +544,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 <script>
 const DB_URL='https://qenuwywkrjsvxgurkcbe.supabase.co';
 const DB_KEY='sb_publishable_o7KC9YG-VnoqKMaWUauY5w_Ved962JU';
-const db=window.supabase.createClient(DB_URL,DB_KEY);
+const db=window.supabase.createClient(DB_URL,DB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
 
 const langToDeepL={ko:'KO',en:'EN',ja:'JA',zh:'ZH',es:'ES',fr:'FR',de:'DE',pt:'PT'};
 const countryToLang={KR:'ko',US:'en',JP:'ja',CN:'zh',GB:'en',DE:'de',FR:'fr',BR:'pt',AU:'en',IN:'en'};
@@ -595,13 +620,14 @@ async function initPermissions(){
 
 setTimeout(async()=>{
   await initPermissions();
+  // 구글 로그인 세션 확인 (OAuth 리다이렉트 후 처리)
+  await checkAuthSession();
   const{data}=await db.from('users').select('*').eq('user_id',userId).single();
   if(data?.banned){
     document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;padding:40px;text-align:center;font-family:Pretendard,sans-serif;background:#fff;"><div style="font-size:48px;margin-bottom:20px;">🚫</div><div style="font-size:20px;font-weight:700;color:#111;margin-bottom:10px;">이용이 제한된 계정입니다</div><div style="font-size:14px;color:#888;line-height:1.6;">부적절한 행동으로 신고가 누적되어<br>서비스 이용이 제한되었습니다.<br><br>문의: rgeo.labs@gmail.com</div></div>';
     return;
   }
   if(data?.nickname){
-    // 활동 기록 갱신 (MAU/DAU/리텐션용)
     const today=new Date().toISOString().slice(0,10);
     const update={last_active:new Date().toISOString()};
     if(!data.first_active) update.first_active=today;
@@ -613,6 +639,76 @@ setTimeout(async()=>{
 },1200);
 
 function goProfile(){show('profile');}
+
+// 프로필 화면 진입 시 구글 정보 미리 채우기
+async function prefillProfile(){
+  const{data:{session}}=await db.auth.getSession();
+  if(session?.user){
+    const meta=session.user.user_metadata||{};
+    const nickInput=document.getElementById('nicknameInput');
+    if(meta.full_name && !nickInput.value) nickInput.value=meta.full_name.slice(0,12);
+    if(meta.avatar_url){
+      avatarDataUrl=meta.avatar_url;
+      document.getElementById('avatarPreview').src=meta.avatar_url;
+      document.getElementById('avatarPreview').style.display='block';
+      document.getElementById('avatarPlaceholder').style.display='none';
+    }
+  }
+}
+
+// 구글 로그인
+async function loginWithGoogle(){
+  const{error}=await db.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:window.location.href.split('?')[0].split('#')[0]}
+  });
+  if(error){ toast('로그인 중 오류가 발생했어요'); console.error(error); }
+}
+
+// 로그인 세션 확인 (OAuth 리다이렉트 후)
+async function checkAuthSession(){
+  const{data:{session}}=await db.auth.getSession();
+  if(session?.user){
+    const googleId=session.user.id;
+    userId=googleId;
+    localStorage.setItem('rgeo_uid',googleId);
+    const meta=session.user.user_metadata||{};
+    if(meta.avatar_url && !avatarDataUrl) avatarDataUrl=meta.avatar_url;
+    return {loggedIn:true, name:meta.full_name||meta.name, avatar:meta.avatar_url};
+  }
+  return {loggedIn:false};
+}
+
+// 로그인 후 화면 라우팅
+async function routeAfterAuth(){
+  const{data}=await db.from('users').select('*').eq('user_id',userId).single();
+  if(data?.banned){
+    document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;padding:40px;text-align:center;font-family:Pretendard,sans-serif;background:#fff;"><div style="font-size:48px;margin-bottom:20px;">🚫</div><div style="font-size:20px;font-weight:700;color:#111;margin-bottom:10px;">이용이 제한된 계정입니다</div><div style="font-size:14px;color:#888;line-height:1.6;">부적절한 행동으로 신고가 누적되어<br>서비스 이용이 제한되었습니다.<br><br>문의: rgeo.labs@gmail.com</div></div>';
+    return;
+  }
+  if(data?.nickname){
+    const today=new Date().toISOString().slice(0,10);
+    const update={last_active:new Date().toISOString()};
+    if(!data.first_active) update.first_active=today;
+    try{ db.from('users').update(update).eq('user_id',userId); }catch(e){}
+    show('onboard');
+  } else {
+    // 로그인은 됐지만 프로필 없음 → 프로필 설정으로
+    show('profile');
+    prefillProfile();
+  }
+}
+
+// 로그인 상태 변화 감지 (구글 리다이렉트 후 자동 처리)
+db.auth.onAuthStateChange((event, session)=>{
+  if(event==='SIGNED_IN' && session?.user){
+    userId=session.user.id;
+    localStorage.setItem('rgeo_uid',userId);
+    const meta=session.user.user_metadata||{};
+    if(meta.avatar_url && !avatarDataUrl) avatarDataUrl=meta.avatar_url;
+    routeAfterAuth();
+  }
+});
 
 // 나이·성별 그리드
 function initSimpleGrid(id,setter){
@@ -677,6 +773,30 @@ document.getElementById('connectBtn').addEventListener('click', async()=>{
   }
 });
 document.getElementById('cancelBtn').addEventListener('click',cancelMatch);
+
+// 광고 카운트다운 (애드몹 자리 - 지금은 자체 홍보)
+let adTimer=null;
+function startAdCountdown(){
+  let sec=5;
+  const el=document.getElementById('adCountdown');
+  el.textContent=`${sec}초 후 광고 닫기`;
+  clearInterval(adTimer);
+  adTimer=setInterval(()=>{
+    sec--;
+    if(sec>0){
+      el.textContent=`${sec}초 후 광고 닫기`;
+    } else {
+      el.textContent='';
+      clearInterval(adTimer);
+    }
+  },1000);
+}
+
+// 프리미엄 버튼
+document.getElementById('goPremiumBtn').addEventListener('click',()=>{
+  toast('프리미엄은 앱 출시 후 이용 가능해요');
+  // 추후: 결제 연동 → is_premium=true → 광고 제거 + 우선매칭
+});
 document.getElementById('testBtn').addEventListener('click',async()=>{
   show('call');
   document.getElementById('callAvatarFallback').textContent='🧪';
@@ -716,13 +836,28 @@ async function startMatch(){
   document.getElementById('matchInfo').textContent=`${flagMap[targetCountry]||''} ${targetCountry} 친구 찾는 중`;
   showDemandCards();
 
-  // 내 정보 매칭 풀에 등록 (내 나라 + 원하는 나라)
+  // 프리미엄 여부 확인 - 광고 표시 결정
+  const{data:me}=await db.from('users').select('is_premium').eq('user_id',userId).single();
+  const isPremium=me?.is_premium||false;
+  const adZone=document.getElementById('adZone');
+  const premBtn=document.getElementById('goPremiumBtn');
+  if(isPremium){
+    adZone.style.display='none';
+    premBtn.style.display='none';
+  } else {
+    adZone.style.display='block';
+    premBtn.style.display='flex';
+    startAdCountdown();
+  }
+
+  // 내 정보 매칭 풀에 등록 (프리미엄이면 우선순위 표시)
   await db.from('matching_pool').upsert({
     user_id:userId,
     my_lang:myLang,
     my_country:savedCountry,
     target_country:targetCountry,
     status:'waiting',
+    is_premium:isPremium,
     created_at:new Date().toISOString()
   });
 
@@ -733,13 +868,15 @@ async function startMatch(){
   const{data:bannedUsers}=await db.from('users').select('user_id').eq('banned',true);
   const bannedIds=(bannedUsers||[]).map(u=>u.user_id);
 
-  // 상대 찾기
+  // 상대 찾기 - 프리미엄 우선, 그 다음 오래 기다린 순
   let{data:matches}=await db.from('matching_pool')
     .select('*')
     .eq('my_country',targetCountry)
     .eq('target_country',savedCountry)
     .eq('status','waiting')
     .neq('user_id',userId)
+    .order('is_premium',{ascending:false})
+    .order('created_at',{ascending:true})
     .limit(10);
 
   // 차단·밴 사용자 제외
@@ -758,7 +895,7 @@ async function startMatch(){
 }
 
 async function startCall(room,isInit,partner){
-  roomId=room;show('call');
+  roomId=room;clearInterval(adTimer);show('call');
   lastPartnerId=partner?.user_id||null;
   lastPartnerCountry=partner?.my_country||partner?.target_country||null;
   document.getElementById('peerName').textContent=partner?.target_country||'?';
@@ -1179,7 +1316,7 @@ function show(id){
     }
   }
 }
-async function cancelMatch(){await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
+async function cancelMatch(){clearInterval(adTimer);await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
 function cleanupCall(){
   stopSTT();
   clearInterval(timerIv);
