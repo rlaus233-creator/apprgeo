@@ -330,6 +330,22 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     </div>
 
     <div>
+      <div class="seg-label" style="margin-bottom:8px;">내 나라</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;" id="myCountryGrid">
+        <div class="pick-row mc" data-val="KR" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇰🇷</div><div style="font-size:11px;font-weight:600;">한국</div></div>
+        <div class="pick-row mc" data-val="US" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇺🇸</div><div style="font-size:11px;font-weight:600;">미국</div></div>
+        <div class="pick-row mc" data-val="JP" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇯🇵</div><div style="font-size:11px;font-weight:600;">일본</div></div>
+        <div class="pick-row mc" data-val="CN" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇨🇳</div><div style="font-size:11px;font-weight:600;">중국</div></div>
+        <div class="pick-row mc" data-val="FR" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇫🇷</div><div style="font-size:11px;font-weight:600;">프랑스</div></div>
+        <div class="pick-row mc" data-val="DE" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇩🇪</div><div style="font-size:11px;font-weight:600;">독일</div></div>
+        <div class="pick-row mc" data-val="GB" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇬🇧</div><div style="font-size:11px;font-weight:600;">영국</div></div>
+        <div class="pick-row mc" data-val="BR" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇧🇷</div><div style="font-size:11px;font-weight:600;">브라질</div></div>
+        <div class="pick-row mc" data-val="AU" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇦🇺</div><div style="font-size:11px;font-weight:600;">호주</div></div>
+        <div class="pick-row mc" data-val="IN" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇮🇳</div><div style="font-size:11px;font-weight:600;">인도</div></div>
+      </div>
+    </div>
+
+    <div>
       <div class="seg-label" style="margin-bottom:8px;">나이대</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="ageGrid">
         <div class="pick-row" data-val="10s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">10대</div></div>
@@ -354,8 +370,8 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <button class="btn-blue" onclick="saveProfile()">시작하기</button>
   </div>
 </div>
-<div class="screen" id="onboard">
-  <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+<div class="screen" id="onboard" style="background:linear-gradient(160deg,#FF8E72 0%,#FF6B4A 100%);">
+  <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;" onerror="this.style.display='none'">
     <source src="onboard.mp4" type="video/mp4">
   </video>
   <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,126,95,.45) 0%,rgba(254,140,114,.25) 45%,rgba(20,10,5,.88) 100%);z-index:1;"></div>
@@ -593,21 +609,26 @@ function initSimpleGrid(id,setter){
     });
   });
 }
+var ageGroup=null, gender=null, myCountry=null;
 initSimpleGrid('ageGrid',v=>ageGroup=v);
 initSimpleGrid('genderGrid',v=>gender=v);
+initSimpleGrid('myCountryGrid',v=>myCountry=v);
 
 async function saveProfile(){
   const nickname=document.getElementById('nicknameInput').value.trim();
   if(!nickname){alert('닉네임을 입력해주세요');return;}
+  if(!myCountry){alert('내 나라를 선택해주세요');return;}
   if(!ageGroup){alert('나이대를 선택해주세요');return;}
   await db.from('users').upsert({
     user_id:userId,
     nickname,
+    my_country:myCountry,
     age_group:ageGroup,
     gender:gender||'none',
     avatar_url:avatarDataUrl||null,
     created_at:new Date().toISOString()
   });
+  localStorage.setItem('rgeo_country',myCountry);
   if(avatarDataUrl) localStorage.setItem('rgeo_avatar',avatarDataUrl);
   show('onboard');
 }
@@ -674,11 +695,29 @@ document.getElementById('testBtn').addEventListener('click',async()=>{
 
 async function startMatch(){
   show('matching');
-  document.getElementById('matchInfo').textContent=`${myLang} · ${targetCountry} 매칭 중`;
+  const savedCountry=localStorage.getItem('rgeo_country')||'KR';
+  document.getElementById('matchInfo').textContent=`${flagMap[targetCountry]||''} ${targetCountry} 친구 찾는 중`;
   showDemandCards();
-  await db.from('matching_pool').upsert({user_id:userId,my_lang:myLang,target_country:targetCountry,status:'waiting',created_at:new Date().toISOString()});
-  const myCountry=langMap[myLang]||'KR';
-  const{data:match}=await db.from('matching_pool').select('*').eq('target_country',myCountry).eq('status','waiting').neq('user_id',userId).limit(1).single();
+
+  // 내 정보 매칭 풀에 등록 (내 나라 + 원하는 나라)
+  await db.from('matching_pool').upsert({
+    user_id:userId,
+    my_lang:myLang,
+    my_country:savedCountry,
+    target_country:targetCountry,
+    status:'waiting',
+    created_at:new Date().toISOString()
+  });
+
+  // 상대 찾기: 내가 원하는 나라(targetCountry)에 있으면서, 나를 원하는(내 나라를 target으로) 사람
+  const{data:match}=await db.from('matching_pool')
+    .select('*')
+    .eq('my_country',targetCountry)        // 상대가 내가 원하는 나라 사람
+    .eq('target_country',savedCountry)      // 상대도 내 나라를 원함
+    .eq('status','waiting')
+    .neq('user_id',userId)
+    .limit(1).single();
+
   if(match){
     roomId=crypto.randomUUID();
     await db.from('matching_pool').update({status:'matched',room_id:roomId}).eq('user_id',userId);
@@ -867,27 +906,15 @@ let peerSubtitleTimeout=null;
 async function translateText(text, sourceLang, targetLang){
   if(sourceLang===targetLang) return text;
   try{
-    // LibreTranslate - CORS 없음, 무료
-    const res=await fetch('https://libretranslate.com/translate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        q:text,
-        source:sourceLang,
-        target:targetLang,
-        format:'text',
-        api_key:''
-      })
-    });
+    // MyMemory - API 키 불필요, CORS 허용, 무료
+    const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`);
     const data=await res.json();
-    return data.translatedText||text;
+    const translated=data.responseData?.translatedText;
+    if(translated && !translated.includes('MYMEMORY WARNING')) return translated;
+    return text;
   }catch(e){
-    // fallback: MyMemory 무료 번역 API
-    try{
-      const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`);
-      const data=await res.json();
-      return data.responseData?.translatedText||text;
-    }catch(e2){ return text; }
+    console.error('번역 실패',e);
+    return text;
   }
 }
 
@@ -993,16 +1020,16 @@ async function saveUsage(addSecs){
 
 // 별점 평가
 let selectedRating=0;
-document.querySelectorAll('.star').forEach(star=>{
-  star.addEventListener('click',()=>{
-    selectedRating=parseInt(star.dataset.v);
-    document.querySelectorAll('.star').forEach(s=>{
-      if(parseInt(s.dataset.v)<=selectedRating){
-        s.style.filter='grayscale(0)';s.style.opacity='1';s.style.transform='scale(1.1)';
-      } else {
-        s.style.filter='grayscale(1)';s.style.opacity='.4';s.style.transform='scale(1)';
-      }
-    });
+document.addEventListener('click',e=>{
+  const star=e.target.closest('.star');
+  if(!star)return;
+  selectedRating=parseInt(star.dataset.v);
+  document.querySelectorAll('.star').forEach(s=>{
+    if(parseInt(s.dataset.v)<=selectedRating){
+      s.style.filter='grayscale(0)';s.style.opacity='1';s.style.transform='scale(1.15)';
+    } else {
+      s.style.filter='grayscale(1)';s.style.opacity='.4';s.style.transform='scale(1)';
+    }
   });
 });
 
