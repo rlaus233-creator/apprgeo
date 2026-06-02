@@ -370,15 +370,15 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <button class="btn-blue" onclick="saveProfile()">시작하기</button>
   </div>
 </div>
-<div class="screen" id="onboard" style="background:linear-gradient(160deg,#FF8E72 0%,#FF6B4A 100%);">
-  <video id="onboardVideo" autoplay muted loop playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:linear-gradient(160deg,#FF8E72,#FF6B4A);">
+<div class="screen" id="onboard" style="background:#000;">
+  <video id="onboardVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
     <source src="onboard.mp4" type="video/mp4">
   </video>
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.1) 40%,rgba(20,10,5,.75) 100%);z-index:1;"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,transparent 35%,rgba(0,0,0,.6) 100%);z-index:1;"></div>
 
   <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 32px 56px;">
-    <div style="font-size:72px;font-weight:800;letter-spacing:-.06em;color:#fff;line-height:1;margin-bottom:20px;text-shadow:0 4px 24px rgba(0,0,0,.3);">RGEO</div>
-    <div style="font-size:19px;font-weight:500;color:rgba(255,255,255,.92);line-height:1.6;margin-bottom:40px;text-shadow:0 2px 12px rgba(0,0,0,.4);">언어를 몰라도 괜찮아요.<br>전세계 친구와 얼굴 보며 대화해요.</div>
+    <div style="font-size:72px;font-weight:800;letter-spacing:-.06em;color:#fff;line-height:1;margin-bottom:20px;text-shadow:0 4px 24px rgba(0,0,0,.5);">RGEO</div>
+    <div style="font-size:19px;font-weight:500;color:rgba(255,255,255,.92);line-height:1.6;margin-bottom:40px;text-shadow:0 2px 12px rgba(0,0,0,.6);">언어를 몰라도 괜찮아요.<br>전세계 친구와 얼굴 보며 대화해요.</div>
     <button class="btn-blue" onclick="show('setup')" style="background:#fff;color:#FF6B4A;">시작하기</button>
   </div>
 </div>
@@ -596,6 +596,10 @@ async function initPermissions(){
 setTimeout(async()=>{
   await initPermissions();
   const{data}=await db.from('users').select('*').eq('user_id',userId).single();
+  if(data?.banned){
+    document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;padding:40px;text-align:center;font-family:Pretendard,sans-serif;background:#fff;"><div style="font-size:48px;margin-bottom:20px;">🚫</div><div style="font-size:20px;font-weight:700;color:#111;margin-bottom:10px;">이용이 제한된 계정입니다</div><div style="font-size:14px;color:#888;line-height:1.6;">부적절한 행동으로 신고가 누적되어<br>서비스 이용이 제한되었습니다.<br><br>문의: rgeo.labs@gmail.com</div></div>';
+    return;
+  }
   if(data?.nickname){
     // 활동 기록 갱신 (MAU/DAU/리텐션용)
     const today=new Date().toISOString().slice(0,10);
@@ -725,17 +729,21 @@ async function startMatch(){
   // 차단 목록
   const blocked=JSON.parse(localStorage.getItem('rgeo_blocked')||'[]');
 
-  // 상대 찾기: 내가 원하는 나라(targetCountry)에 있으면서, 나를 원하는(내 나라를 target으로) 사람
+  // 밴된 사용자 목록
+  const{data:bannedUsers}=await db.from('users').select('user_id').eq('banned',true);
+  const bannedIds=(bannedUsers||[]).map(u=>u.user_id);
+
+  // 상대 찾기
   let{data:matches}=await db.from('matching_pool')
     .select('*')
-    .eq('my_country',targetCountry)        // 상대가 내가 원하는 나라 사람
-    .eq('target_country',savedCountry)      // 상대도 내 나라를 원함
+    .eq('my_country',targetCountry)
+    .eq('target_country',savedCountry)
     .eq('status','waiting')
     .neq('user_id',userId)
     .limit(10);
 
-  // 차단한 사용자 제외
-  const match=(matches||[]).find(m=>!blocked.includes(m.user_id));
+  // 차단·밴 사용자 제외
+  const match=(matches||[]).find(m=>!blocked.includes(m.user_id) && !bannedIds.includes(m.user_id));
 
   if(match){
     roomId=crypto.randomUUID();
@@ -1162,7 +1170,13 @@ function show(id){
   // 온보딩 화면이면 비디오 강제 재생
   if(id==='onboard'){
     const v=document.getElementById('onboardVideo');
-    if(v){ v.play().catch(e=>console.log('비디오 자동재생 차단',e)); }
+    if(v){
+      v.muted=true;
+      v.play().catch(()=>{
+        // 첫 시도 실패 시 약간 후 재시도
+        setTimeout(()=>v.play().catch(e=>console.log('비디오 재생 차단',e)),300);
+      });
+    }
   }
 }
 async function cancelMatch(){await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
