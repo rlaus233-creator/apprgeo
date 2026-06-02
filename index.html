@@ -925,30 +925,51 @@ function showPeerSubtitle(text){
 
 function startMySTT(stream, myLangCode, peerLangCode, isTestMode=false){
   if(myDgSocket) myDgSocket.close();
-  const ws=new WebSocket(`wss://api.deepgram.com/v1/listen?language=${myLangCode}&punctuate=true&interim_results=false`,['token',DEEPGRAM_KEY]);
+
+  // 모바일 호환 mimeType 선택
+  const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':
+    MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
+    MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
+
+  const ws=new WebSocket(`wss://api.deepgram.com/v1/listen?language=${myLangCode}&punctuate=true&interim_results=true&endpointing=300`,['token',DEEPGRAM_KEY]);
+
   ws.onopen=()=>{
-    const recorder=new MediaRecorder(stream,{mimeType:'audio/webm'});
-    recorder.ondataavailable=e=>{if(ws.readyState===1&&e.data.size>0)ws.send(e.data);};
-    recorder.start(250);
-    ws._recorder=recorder;
-  };
-  ws.onmessage=async e=>{
-    const d=JSON.parse(e.data);
-    const text=d.channel?.alternatives?.[0]?.transcript;
-    if(!text||!d.is_final)return;
-    // 내 원문 자막
-    showMySubtitle(text);
-    // 번역
-    const translated=await translateText(text, myLangCode, peerLangCode);
-    if(isTestMode){
-      // 테스트 모드: 번역 결과를 상대방 자막으로 보여줌
-      showPeerSubtitle(translated);
-    } else {
-      // 실제 통화: 채널로 전송
-      if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+    try{
+      const recorderOpts=mimeType?{mimeType}:{};
+      const recorder=new MediaRecorder(stream, recorderOpts);
+      recorder.ondataavailable=e=>{
+        if(ws.readyState===1&&e.data&&e.data.size>0) ws.send(e.data);
+      };
+      recorder.start(200);
+      ws._recorder=recorder;
+      console.log('STT 시작됨, mimeType:', mimeType||'기본값');
+    }catch(e){
+      console.error('MediaRecorder 에러', e);
     }
   };
+
+  ws.onmessage=async e=>{
+    try{
+      const d=JSON.parse(e.data);
+      const text=d.channel?.alternatives?.[0]?.transcript;
+      if(!text) return;
+      if(d.is_final){
+        showMySubtitle(text);
+        const translated=await translateText(text, myLangCode, peerLangCode);
+        if(isTestMode){
+          showPeerSubtitle(`(번역) ${translated}`);
+        } else {
+          if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+        }
+      } else {
+        // interim - 임시 자막 표시
+        showMySubtitle(text + '...');
+      }
+    }catch(e){console.error('STT 메시지 에러',e);}
+  };
+
   ws.onerror=e=>console.error('STT 에러',e);
+  ws.onclose=e=>console.log('STT 종료',e.code);
   myDgSocket=ws;
 }
 
