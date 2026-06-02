@@ -924,59 +924,90 @@ function showPeerSubtitle(text){
 }
 
 function startMySTT(stream, myLangCode, peerLangCode, isTestMode=false){
-  if(myDgSocket) myDgSocket.close();
+  stopSTT();
 
-  // 모바일 호환 mimeType 선택
-  const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':
-    MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
-    MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
+  // Web Speech API 사용 (브라우저 내장, 별도 연결 불필요)
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+    console.warn('음성인식 미지원 브라우저');
+    // 미지원 시 Deepgram fallback
+    startDeepgramSTT(stream, myLangCode, peerLangCode, isTestMode);
+    return;
+  }
 
-  const ws=new WebSocket(`wss://api.deepgram.com/v1/listen?language=${myLangCode}&punctuate=true&interim_results=true&endpointing=300`,['token',DEEPGRAM_KEY]);
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const recognition=new SR();
+  recognition.lang=myLangCode+'-'+myLangCode.toUpperCase();
+  recognition.continuous=true;
+  recognition.interimResults=true;
 
-  ws.onopen=()=>{
-    try{
-      const recorderOpts=mimeType?{mimeType}:{};
-      const recorder=new MediaRecorder(stream, recorderOpts);
-      recorder.ondataavailable=e=>{
-        if(ws.readyState===1&&e.data&&e.data.size>0) ws.send(e.data);
-      };
-      recorder.start(200);
-      ws._recorder=recorder;
-      console.log('STT 시작됨, mimeType:', mimeType||'기본값');
-    }catch(e){
-      console.error('MediaRecorder 에러', e);
+  recognition.onresult=async e=>{
+    let interim='';
+    let final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    if(interim) showMySubtitle(interim+'...');
+    if(final){
+      showMySubtitle(final);
+      const translated=await translateText(final, myLangCode, peerLangCode);
+      if(isTestMode){
+        showPeerSubtitle(`(번역) ${translated}`);
+      } else {
+        if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+      }
     }
   };
 
+  recognition.onerror=e=>{
+    console.error('음성인식 에러',e.error);
+    if(e.error!=='aborted') setTimeout(()=>recognition.start(), 1000);
+  };
+
+  recognition.onend=()=>{
+    if(myDgSocket) recognition.start(); // 자동 재시작
+  };
+
+  recognition.start();
+  myDgSocket=recognition; // 재사용
+}
+
+function startDeepgramSTT(stream, myLangCode, peerLangCode, isTestMode=false){
+  const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':
+    MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
+    MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
+  const ws=new WebSocket(`wss://api.deepgram.com/v1/listen?language=${myLangCode}&punctuate=true&interim_results=true&endpointing=300`,['token',DEEPGRAM_KEY]);
+  ws.onopen=()=>{
+    try{
+      const recorder=new MediaRecorder(stream,mimeType?{mimeType}:{});
+      recorder.ondataavailable=e=>{if(ws.readyState===1&&e.data?.size>0)ws.send(e.data);};
+      recorder.start(200);
+      ws._recorder=recorder;
+    }catch(e){console.error('recorder 에러',e);}
+  };
   ws.onmessage=async e=>{
     try{
       const d=JSON.parse(e.data);
       const text=d.channel?.alternatives?.[0]?.transcript;
-      if(!text) return;
+      if(!text)return;
       if(d.is_final){
         showMySubtitle(text);
-        const translated=await translateText(text, myLangCode, peerLangCode);
-        if(isTestMode){
-          showPeerSubtitle(`(번역) ${translated}`);
-        } else {
-          if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
-        }
+        const translated=await translateText(text,myLangCode,peerLangCode);
+        if(isTestMode) showPeerSubtitle(`(번역) ${translated}`);
+        else if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
       } else {
-        // interim - 임시 자막 표시
-        showMySubtitle(text + '...');
+        showMySubtitle(text+'...');
       }
-    }catch(e){console.error('STT 메시지 에러',e);}
+    }catch(e){}
   };
-
   ws.onerror=e=>console.error('STT 에러',e);
-  ws.onclose=e=>console.log('STT 종료',e.code);
   myDgSocket=ws;
 }
 
 function stopSTT(){
   if(myDgSocket){
-    myDgSocket._recorder?.stop();
-    myDgSocket.close();
+    if(myDgSocket.stop) myDgSocket.stop(); // SpeechRecognition
+    else if(myDgSocket.close) { myDgSocket._recorder?.stop(); myDgSocket.close(); } // WebSocket
     myDgSocket=null;
   }
 }
