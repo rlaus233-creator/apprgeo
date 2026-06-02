@@ -882,7 +882,7 @@ async function showDemandCards(){
 }
 
 const DEEPGRAM_KEY='7d034d27e9049c04af2cace8a0a4aa2c41a797e9';
-const DEEPL_KEY='19AGhwVLLBBVk4zVB';
+const DEEPL_KEY='26a7c19c-cabc-42d2-bcc7-9cefda7ff2f2:fx';
 
 let myDgSocket=null;
 let peerDgSocket=null;
@@ -890,21 +890,30 @@ let subtitleTimeout=null;
 let peerSubtitleTimeout=null;
 
 async function translateText(text, sourceLang, targetLang){
-  if(sourceLang===targetLang)return text;
+  if(sourceLang===targetLang) return text;
   try{
-    const res=await fetch(`https://api-free.deepl.com/v2/translate`,{
+    // LibreTranslate - CORS 없음, 무료
+    const res=await fetch('https://libretranslate.com/translate',{
       method:'POST',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:new URLSearchParams({
-        auth_key:DEEPL_KEY,
-        text,
-        source_lang:langToDeepL[sourceLang]||'EN',
-        target_lang:langToDeepL[targetLang]||'KO'
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        q:text,
+        source:sourceLang,
+        target:targetLang,
+        format:'text',
+        api_key:''
       })
     });
     const data=await res.json();
-    return data.translations?.[0]?.text||text;
-  }catch(e){return text;}
+    return data.translatedText||text;
+  }catch(e){
+    // fallback: MyMemory 무료 번역 API
+    try{
+      const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`);
+      const data=await res.json();
+      return data.responseData?.translatedText||text;
+    }catch(e2){ return text; }
+  }
 }
 
 function showMySubtitle(text){
@@ -926,88 +935,63 @@ function showPeerSubtitle(text){
 function startMySTT(stream, myLangCode, peerLangCode, isTestMode=false){
   stopSTT();
 
-  // Web Speech API 사용 (브라우저 내장, 별도 연결 불필요)
-  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
-    console.warn('음성인식 미지원 브라우저');
-    // 미지원 시 Deepgram fallback
-    startDeepgramSTT(stream, myLangCode, peerLangCode, isTestMode);
-    return;
-  }
+  // 오디오 트랙만 따로 추출
+  const audioTrack=stream.getAudioTracks()[0];
+  if(!audioTrack){console.error('오디오 트랙 없음');return;}
+  const audioStream=new MediaStream([audioTrack]);
 
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const recognition=new SR();
-  recognition.lang=myLangCode+'-'+myLangCode.toUpperCase();
-  recognition.continuous=true;
-  recognition.interimResults=true;
-
-  recognition.onresult=async e=>{
-    let interim='';
-    let final='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal) final+=e.results[i][0].transcript;
-      else interim+=e.results[i][0].transcript;
-    }
-    if(interim) showMySubtitle(interim+'...');
-    if(final){
-      showMySubtitle(final);
-      const translated=await translateText(final, myLangCode, peerLangCode);
-      if(isTestMode){
-        showPeerSubtitle(`(번역) ${translated}`);
-      } else {
-        if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
-      }
-    }
-  };
-
-  recognition.onerror=e=>{
-    console.error('음성인식 에러',e.error);
-    if(e.error!=='aborted') setTimeout(()=>recognition.start(), 1000);
-  };
-
-  recognition.onend=()=>{
-    if(myDgSocket) recognition.start(); // 자동 재시작
-  };
-
-  recognition.start();
-  myDgSocket=recognition; // 재사용
-}
-
-function startDeepgramSTT(stream, myLangCode, peerLangCode, isTestMode=false){
   const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':
     MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
+    MediaRecorder.isTypeSupported('audio/ogg')?'audio/ogg':
     MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
-  const ws=new WebSocket(`wss://api.deepgram.com/v1/listen?language=${myLangCode}&punctuate=true&interim_results=true&endpointing=300`,['token',DEEPGRAM_KEY]);
+
+  console.log('STT 시작 - 언어:', myLangCode, '→', peerLangCode, 'mimeType:', mimeType||'기본');
+
+  const ws=new WebSocket(
+    `wss://api.deepgram.com/v1/listen?language=${myLangCode}&punctuate=true&interim_results=true&endpointing=400&vad_events=true`,
+    ['token', DEEPGRAM_KEY]
+  );
+
   ws.onopen=()=>{
+    console.log('Deepgram 연결됨');
     try{
-      const recorder=new MediaRecorder(stream,mimeType?{mimeType}:{});
-      recorder.ondataavailable=e=>{if(ws.readyState===1&&e.data?.size>0)ws.send(e.data);};
-      recorder.start(200);
+      const opts=mimeType?{mimeType}:{};
+      const recorder=new MediaRecorder(audioStream, opts);
+      recorder.ondataavailable=e=>{
+        if(ws.readyState===WebSocket.OPEN && e.data?.size>0) ws.send(e.data);
+      };
+      recorder.start(300);
       ws._recorder=recorder;
-    }catch(e){console.error('recorder 에러',e);}
+    }catch(e){console.error('MediaRecorder 실패',e);}
   };
+
   ws.onmessage=async e=>{
     try{
       const d=JSON.parse(e.data);
-      const text=d.channel?.alternatives?.[0]?.transcript;
-      if(!text)return;
-      if(d.is_final){
-        showMySubtitle(text);
-        const translated=await translateText(text,myLangCode,peerLangCode);
-        if(isTestMode) showPeerSubtitle(`(번역) ${translated}`);
-        else if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
-      } else {
-        showMySubtitle(text+'...');
+      if(d.type==='Results'){
+        const text=d.channel?.alternatives?.[0]?.transcript;
+        if(!text)return;
+        if(d.is_final){
+          showMySubtitle(text);
+          const translated=await translateText(text, myLangCode, peerLangCode);
+          if(isTestMode) showPeerSubtitle(`${translated}`);
+          else if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+        } else {
+          showMySubtitle(text+'...');
+        }
       }
-    }catch(e){}
+    }catch(err){console.error('STT 파싱 에러',err);}
   };
-  ws.onerror=e=>console.error('STT 에러',e);
+
+  ws.onerror=e=>console.error('Deepgram 에러',e);
+  ws.onclose=e=>console.log('Deepgram 종료 코드:',e.code, e.reason);
   myDgSocket=ws;
 }
 
 function stopSTT(){
   if(myDgSocket){
-    if(myDgSocket.stop) myDgSocket.stop(); // SpeechRecognition
-    else if(myDgSocket.close) { myDgSocket._recorder?.stop(); myDgSocket.close(); } // WebSocket
+    try{myDgSocket._recorder?.stop();}catch(e){}
+    try{if(myDgSocket.readyState<=1)myDgSocket.close();}catch(e){}
     myDgSocket=null;
   }
 }
