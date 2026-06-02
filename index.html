@@ -272,13 +272,10 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 <body>
 
 <!-- SPLASH -->
-<div class="screen on" id="splash">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
-    <div style="width:88px;height:88px;border-radius:26px;background:linear-gradient(135deg,#3182f6,#1d4ed8);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 40px rgba(49,130,246,.35);animation:splashPop .6s cubic-bezier(.2,.8,.2,1.2);">
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-    </div>
-    <div class="sp-logo" style="animation:splashFade .6s .2s both;">rgeo</div>
-    <div style="font-size:14px;color:var(--ink2);animation:splashFade .6s .4s both;">전 세계 친구와 연결되는 시간</div>
+<div class="screen on" id="splash" style="background:linear-gradient(160deg,#FF8E72 0%,#FF6B4A 100%);">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div style="font-size:64px;font-weight:800;letter-spacing:-.06em;color:#fff;animation:splashPop .6s cubic-bezier(.2,.8,.2,1.2);text-shadow:0 4px 24px rgba(0,0,0,.15);">RGEO</div>
+    <div style="font-size:15px;color:rgba(255,255,255,.9);animation:splashFade .6s .3s both;">전 세계 친구와 연결되는 시간</div>
   </div>
 </div>
 
@@ -286,9 +283,9 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 <div class="screen" id="login">
   <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 28px 56px;">
     <div style="margin-bottom:48px;">
-      <div style="font-size:13px;font-weight:600;color:var(--blue);letter-spacing:.06em;margin-bottom:16px;">rgeo</div>
+      <div style="font-size:15px;font-weight:700;color:#FF6B4A;letter-spacing:-.02em;margin-bottom:16px;">RGEO</div>
       <div style="font-size:34px;font-weight:800;letter-spacing:-.05em;line-height:1.15;margin-bottom:12px;">전세계 친구를<br>만나보세요</div>
-      <div style="font-size:15px;color:var(--ink2);line-height:1.7;">언어 수요가 맞는 상대와<br>실시간으로 연결됩니다</div>
+      <div style="font-size:15px;color:var(--ink2);line-height:1.7;">언어를 몰라도 괜찮아요.<br>얼굴 보며 실시간 번역으로 대화해요.</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <button onclick="goProfile()" style="width:100%;padding:16px;background:#fff;border:1.5px solid #e5e7eb;border-radius:var(--radius);font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .12s;">
@@ -361,15 +358,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
     <source src="onboard.mp4" type="video/mp4">
   </video>
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.2) 40%,rgba(0,0,0,.85) 100%);z-index:1;"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,126,95,.45) 0%,rgba(254,140,114,.25) 45%,rgba(20,10,5,.88) 100%);z-index:1;"></div>
 
-  <div class="ob-hero" style="position:relative;z-index:2;">
-    <div class="ob-chip" style="background:rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(8px);"><div class="ob-chip-dot" style="background:#fff;"></div>언어 수요 매칭</div>
-    <div class="ob-title" style="color:#fff;">내가 원하는 언어로<br><span style="color:#7eb6ff;">전세계 친구</span>를<br>만나요</div>
-    <div class="ob-desc" style="color:rgba(255,255,255,.85);">한국어 쓰고 싶은 미국인,<br>영어 쓰고 싶은 한국인.<br>딱 맞는 수요끼리 연결해드려요.</div>
-  </div>
-  <div class="ob-bottom" style="position:relative;z-index:2;">
-    <button class="btn-blue" onclick="show('setup')">시작하기</button>
+  <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 32px 56px;">
+    <div style="font-size:72px;font-weight:800;letter-spacing:-.06em;color:#fff;line-height:1;margin-bottom:20px;text-shadow:0 4px 24px rgba(0,0,0,.3);">RGEO</div>
+    <div style="font-size:19px;font-weight:500;color:rgba(255,255,255,.92);line-height:1.6;margin-bottom:40px;text-shadow:0 2px 12px rgba(0,0,0,.4);">언어를 몰라도 괜찮아요.<br>전세계 친구와 얼굴 보며 대화해요.</div>
+    <button class="btn-blue" onclick="show('setup')" style="background:#fff;color:#FF6B4A;">시작하기</button>
   </div>
 </div>
 
@@ -413,7 +407,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <div class="match-center"><div class="match-icon">🌍</div></div>
   </div>
   <div class="match-h">상대를 찾고 있어요</div>
-  <div class="match-p">전세계에서 딱 맞는 언어 수요를<br>실시간으로 매칭하고 있어요</div>
+  <div class="match-p">전세계에서 지금 대화할 수 있는<br>친구를 찾고 있어요</div>
   <div class="match-tag">
     <div class="match-tag-dot"></div>
     <div class="match-tag-txt" id="matchInfo">매칭 중...</div>
