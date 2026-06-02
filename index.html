@@ -371,10 +371,11 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   </div>
 </div>
 <div class="screen" id="onboard" style="background:linear-gradient(160deg,#FF8E72 0%,#FF6B4A 100%);">
-  <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;" onerror="this.style.display='none'">
+  <video autoplay muted loop playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:linear-gradient(160deg,#FF8E72,#FF6B4A);">
     <source src="onboard.mp4" type="video/mp4">
+    <source src="./onboard.mp4" type="video/mp4">
   </video>
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,126,95,.45) 0%,rgba(254,140,114,.25) 45%,rgba(20,10,5,.88) 100%);z-index:1;"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.1) 40%,rgba(20,10,5,.75) 100%);z-index:1;"></div>
 
   <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 32px 56px;">
     <div style="font-size:72px;font-weight:800;letter-spacing:-.06em;color:#fff;line-height:1;margin-bottom:20px;text-shadow:0 4px 24px rgba(0,0,0,.3);">RGEO</div>
