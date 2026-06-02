@@ -103,6 +103,9 @@ async function loadAll(){
     const premiumCnt=users.filter(u=>u.is_premium).length;
     const conversionRate=users.length?(premiumCnt/users.length*100).toFixed(1):0;
 
+    // 신고 집계
+    const reportedUsers=buildReportedUsers(users, reports);
+
     // 국가별 사용자
     const byCountry={};
     users.forEach(u=>{if(u.my_country)byCountry[u.my_country]=(byCountry[u.my_country]||0)+1;});
@@ -203,12 +206,82 @@ async function loadAll(){
           </div>
         </div>
       </div>
+
+      <div class="row2">
+        <div class="panel">
+          <div class="panel-title"><span style="color:#ef4444;">⚠ 신고 관리</span> <span class="cnt">신고 3회+ 자동표시</span></div>
+          <div class="live-list">
+            ${reportedUsers.length?reportedUsers.map(r=>`
+              <div class="live-item" style="${r.count>=3?'border:1px solid rgba(239,68,68,.4);':''}">
+                <span class="live-flag">${r.banned?'🚫':(r.count>=3?'🔴':'🟡')}</span>
+                <span class="live-info">${r.nickname||'사용자'} <span style="color:#ef4444;font-weight:600;">신고 ${r.count}회</span>${r.banned?' <span style="color:#888;">(밴됨)</span>':''}</span>
+                ${r.banned?
+                  `<button onclick="unbanUser('${r.id}')" style="padding:6px 12px;background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--ink2);font-family:inherit;font-size:12px;cursor:pointer;">해제</button>`:
+                  `<button onclick="banUser('${r.id}')" style="padding:6px 12px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:8px;color:#ef4444;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">밴</button>`
+                }
+              </div>
+            `).join(''):'<div class="empty">신고된 사용자가 없어요</div>'}
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><span>사용자 관리</span> <span class="cnt">${users.length}명</span></div>
+          <input id="userSearch" placeholder="닉네임 검색..." oninput="filterUsers(this.value)" style="width:100%;padding:12px 14px;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:14px;outline:none;margin-bottom:12px;">
+          <div class="live-list" id="userList">
+            ${users.slice(0,10).map(u=>`
+              <div class="live-item user-item" data-nick="${(u.nickname||'').toLowerCase()}">
+                <span class="live-flag">${flags[u.my_country]||'🌍'}</span>
+                <span class="live-info">${u.nickname||'무명'} ${u.is_premium?'<span style="color:#FF6B4A;font-size:11px;">PRO</span>':''}${u.banned?' <span style="color:#ef4444;font-size:11px;">밴</span>':''}</span>
+                <button onclick="togglePremium('${u.user_id}',${!u.is_premium})" style="padding:6px 10px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink2);font-family:inherit;font-size:11px;cursor:pointer;">${u.is_premium?'PRO해제':'PRO부여'}</button>
+                <button onclick="deleteUser('${u.user_id}')" style="padding:6px 10px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:8px;color:#ef4444;font-family:inherit;font-size:11px;cursor:pointer;">삭제</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
     `;
 
     document.getElementById('lastUpdate').textContent=`마지막 업데이트 ${new Date().toLocaleTimeString('ko-KR')}`;
   }catch(e){
     document.getElementById('content').innerHTML=`<div class="empty">데이터 로드 실패: ${e.message}</div>`;
   }
+}
+
+// 신고 집계
+function buildReportedUsers(users, reports){
+  const cnt={};
+  reports.forEach(r=>{ if(r.reported_id) cnt[r.reported_id]=(cnt[r.reported_id]||0)+1; });
+  return Object.entries(cnt)
+    .map(([uid,count])=>{
+      const u=users.find(x=>x.user_id===uid);
+      return {id:uid, nickname:u?.nickname, count, banned:u?.banned||false};
+    })
+    .sort((a,b)=>b.count-a.count);
+}
+
+async function banUser(uid){
+  if(!confirm('이 사용자를 밴하시겠어요?'))return;
+  await db.from('users').update({banned:true}).eq('user_id',uid);
+  loadAll();
+}
+async function unbanUser(uid){
+  await db.from('users').update({banned:false}).eq('user_id',uid);
+  loadAll();
+}
+async function togglePremium(uid,val){
+  await db.from('users').update({is_premium:val}).eq('user_id',uid);
+  loadAll();
+}
+async function deleteUser(uid){
+  if(!confirm('이 사용자를 완전히 삭제하시겠어요?'))return;
+  await db.from('users').delete().eq('user_id',uid);
+  loadAll();
+}
+function filterUsers(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('.user-item').forEach(el=>{
+    el.style.display=el.dataset.nick.includes(q)?'flex':'none';
+  });
 }
 
 loadAll();
