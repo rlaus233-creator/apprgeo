@@ -495,7 +495,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
         <span class="ctrl-label">마이크</span>
       </div>
       <div class="ctrl-wrap">
-        <button class="ctrl-btn lg" onclick="endCall()">
+        <button class="ctrl-btn lg" onclick="confirmEndCall()">
           <svg viewBox="0 0 24 24"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.42 19.42 0 0 1 4.36 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>
         </button>
         <span class="ctrl-label">종료</span>
@@ -596,8 +596,16 @@ async function initPermissions(){
 setTimeout(async()=>{
   await initPermissions();
   const{data}=await db.from('users').select('*').eq('user_id',userId).single();
-  if(data?.nickname) show('onboard');
-  else show('login');
+  if(data?.nickname){
+    // 활동 기록 갱신 (MAU/DAU/리텐션용)
+    const today=new Date().toISOString().slice(0,10);
+    const update={last_active:new Date().toISOString()};
+    if(!data.first_active) update.first_active=today;
+    try{ db.from('users').update(update).eq('user_id',userId); }catch(e){}
+    show('onboard');
+  } else {
+    show('login');
+  }
 },1200);
 
 function goProfile(){show('profile');}
@@ -619,9 +627,9 @@ initSimpleGrid('myCountryGrid',v=>myCountry=v);
 
 async function saveProfile(){
   const nickname=document.getElementById('nicknameInput').value.trim();
-  if(!nickname){alert('닉네임을 입력해주세요');return;}
-  if(!myCountry){alert('내 나라를 선택해주세요');return;}
-  if(!ageGroup){alert('나이대를 선택해주세요');return;}
+  if(!nickname){toast('닉네임을 입력해주세요');return;}
+  if(!myCountry){toast('내 나라를 선택해주세요');return;}
+  if(!ageGroup){toast('나이대를 선택해주세요');return;}
   await db.from('users').upsert({
     user_id:userId,
     nickname,
@@ -629,6 +637,8 @@ async function saveProfile(){
     age_group:ageGroup,
     gender:gender||'none',
     avatar_url:avatarDataUrl||null,
+    first_active:new Date().toISOString().slice(0,10),
+    last_active:new Date().toISOString(),
     created_at:new Date().toISOString()
   });
   localStorage.setItem('rgeo_country',myCountry);
@@ -659,7 +669,7 @@ document.getElementById('connectBtn').addEventListener('click', async()=>{
     await getCameras();
     startMatch();
   }catch(e){
-    alert('카메라와 마이크 권한이 필요해요.\n설정에서 권한을 허용해주세요.');
+    toast('카메라와 마이크 권한을 허용해주세요');
   }
 });
 document.getElementById('cancelBtn').addEventListener('click',cancelMatch);
@@ -691,7 +701,7 @@ document.getElementById('testBtn').addEventListener('click',async()=>{
       startMySTT(localStream, 'ko', 'en', true);
     },3000);
   }catch(e){
-    alert('카메라 권한이 필요해요');
+    toast('카메라 권한이 필요해요');
     show('matching');
   }
 });
@@ -742,6 +752,7 @@ async function startMatch(){
 async function startCall(room,isInit,partner){
   roomId=room;show('call');
   lastPartnerId=partner?.user_id||null;
+  lastPartnerCountry=partner?.my_country||partner?.target_country||null;
   document.getElementById('peerName').textContent=partner?.target_country||'?';
   document.getElementById('peerLang').textContent=`${partner?.my_lang||''} 사용 중`;
   // 상대방 프로필 사진
@@ -837,6 +848,11 @@ async function switchCam(){
     console.error('카메라 전환 실패',e);
   }
 }
+async function confirmEndCall(){
+  const ok=await showConfirm('통화를 종료할까요?');
+  if(ok) endCall();
+}
+
 async function endCall(){
   if(callCh) callCh?.send({type:'broadcast',event:'end',payload:{}});
   const secs=timerSec;
@@ -871,6 +887,16 @@ async function showResult(callSecs){
     if(totalSecs>=FREE_LIMIT){
       document.getElementById('premiumCard').style.display='block';
       document.getElementById('resultEmoji').textContent='⏰';
+    }
+    // 통화 기록 저장 (30초 이상만)
+    if(callSecs>=MIN_CALL_SEC){
+      const{data}=await db.from('calls').insert({
+        user_id:userId,
+        partner_country:lastPartnerCountry||null,
+        duration_seconds:callSecs,
+        created_at:new Date().toISOString()
+      }).select().single();
+      lastCallId=data?.id||null;
     }
   } catch(e){ document.getElementById('usageText').textContent=''; }
 }
@@ -1059,6 +1085,7 @@ async function saveUsage(addSecs){
 
 // 별점 평가
 let selectedRating=0;
+let lastCallId=null, lastPartnerCountry=null;
 document.addEventListener('click',e=>{
   const star=e.target.closest('.star');
   if(!star)return;
@@ -1070,12 +1097,17 @@ document.addEventListener('click',e=>{
       s.style.filter='grayscale(1)';s.style.opacity='.4';s.style.transform='scale(1)';
     }
   });
+  // 별점 DB 저장
+  if(lastCallId){
+    try{ db.from('calls').update({rating:selectedRating}).eq('id',lastCallId); }catch(e){}
+  }
+  toast('평가해주셔서 감사해요');
 });
 
 let lastPartnerId=null;
-function reportUser(){
-  if(confirm('이 사용자를 신고하시겠어요?\n부적절한 행동, 노출, 폭언 등을 신고할 수 있어요.')){
-    // 신고 기록 저장
+async function reportUser(){
+  const ok=await showConfirm('이 사용자를 신고할까요?\n부적절한 행동, 노출, 폭언 등이 신고됩니다.');
+  if(ok){
     try{
       db.from('reports').insert({
         reporter_id:userId,
@@ -1083,14 +1115,45 @@ function reportUser(){
         created_at:new Date().toISOString()
       });
     }catch(e){}
-    // 차단 목록에 추가
     const blocked=JSON.parse(localStorage.getItem('rgeo_blocked')||'[]');
     if(lastPartnerId&&!blocked.includes(lastPartnerId)){
       blocked.push(lastPartnerId);
       localStorage.setItem('rgeo_blocked',JSON.stringify(blocked));
     }
-    alert('신고가 접수되었어요.\n해당 사용자와 다시 매칭되지 않습니다.');
+    toast('신고가 접수되었어요. 다시 매칭되지 않습니다.');
   }
+}
+
+// 커스텀 토스트
+let toastTimer=null;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.opacity='1';
+  el.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{
+    el.style.opacity='0';
+    el.style.transform='translateX(-50%) translateY(20px)';
+  },2500);
+}
+
+// 커스텀 확인 모달
+function showConfirm(text){
+  return new Promise(resolve=>{
+    const modal=document.getElementById('confirmModal');
+    document.getElementById('confirmText').textContent=text;
+    modal.style.display='flex';
+    const ok=document.getElementById('confirmOk');
+    const cancel=document.getElementById('confirmCancel');
+    const close=(val)=>{
+      modal.style.display='none';
+      ok.onclick=null;cancel.onclick=null;
+      resolve(val);
+    };
+    ok.onclick=()=>close(true);
+    cancel.onclick=()=>close(false);
+  });
 }
 
 function show(id){
@@ -1157,6 +1220,20 @@ function cleanup(){cleanupCall();show('setup');}
 
     <button class="btn-blue" onclick="show('setup')" style="width:100%;">새로운 친구 만나기</button>
     <button onclick="show('setup')" style="margin-top:12px;font-size:15px;color:var(--ink3);background:none;border:none;font-family:inherit;cursor:pointer;padding:8px;">홈으로</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast" style="position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,.92);color:#fff;padding:14px 24px;border-radius:14px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;max-width:340px;text-align:center;line-height:1.5;backdrop-filter:blur(8px);"></div>
+
+<!-- 확인 모달 -->
+<div id="confirmModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:none;align-items:center;justify-content:center;padding:32px;backdrop-filter:blur(2px);">
+  <div style="background:#fff;border-radius:24px;padding:28px 24px 20px;max-width:340px;width:100%;text-align:center;">
+    <div id="confirmText" style="font-size:17px;font-weight:600;color:#111;line-height:1.5;margin-bottom:24px;">정말 나가시겠어요?</div>
+    <div style="display:flex;gap:8px;">
+      <button id="confirmCancel" style="flex:1;padding:15px;background:#f2f2f2;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;color:#666;cursor:pointer;">취소</button>
+      <button id="confirmOk" style="flex:1;padding:15px;background:#FF6B4A;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer;">확인</button>
+    </div>
   </div>
 </div>
 
