@@ -1015,6 +1015,25 @@ async function startCall(room,isInit,partner){
     {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
   ]});
   localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+
+  // 연결 상태 감지 - 상대가 끊기면 자동 종료
+  pc.onconnectionstatechange=()=>{
+    console.log('연결 상태:', pc.connectionState);
+    if(pc.connectionState==='disconnected' || pc.connectionState==='failed'){
+      // 일시적 끊김일 수 있으니 3초 후에도 복구 안 되면 종료
+      setTimeout(()=>{
+        if(pc && (pc.connectionState==='disconnected'||pc.connectionState==='failed'||pc.connectionState==='closed')){
+          handlePeerDisconnect();
+        }
+      },3000);
+    }
+  };
+  pc.oniceconnectionstatechange=()=>{
+    if(pc.iceConnectionState==='failed'){
+      handlePeerDisconnect();
+    }
+  };
+
   pc.ontrack=e=>{
     const remote=document.getElementById('remoteVideo');
     remote.srcObject=e.streams[0];
@@ -1092,11 +1111,26 @@ async function confirmEndCall(){
   if(ok) endCall();
 }
 
+let callEnding=false;
 async function endCall(){
+  if(callEnding)return;
+  callEnding=true;
   if(callCh) callCh?.send({type:'broadcast',event:'end',payload:{}});
   const secs=timerSec;
   cleanupCall();
   showResult(secs);
+  callEnding=false;
+}
+
+// 상대방 연결 끊김 처리
+async function handlePeerDisconnect(){
+  if(callEnding)return;
+  callEnding=true;
+  const secs=timerSec;
+  toast('상대방과 연결이 끊어졌어요');
+  cleanupCall();
+  showResult(secs);
+  callEnding=false;
 }
 
 async function showResult(callSecs){
@@ -1445,6 +1479,10 @@ function cleanup(){cleanupCall();show('setup');}
 
 // 페이지 떠날 때 매칭 풀에서 제거 (유령 대기자 방지)
 window.addEventListener('beforeunload',()=>{
+  // 통화 중이면 상대방에게 종료 신호
+  if(callCh){
+    try{ callCh.send({type:'broadcast',event:'end',payload:{}}); }catch(e){}
+  }
   if(userId){
     try{
       navigator.sendBeacon(
@@ -1454,6 +1492,12 @@ window.addEventListener('beforeunload',()=>{
     }catch(e){}
     try{ db.from('matching_pool').delete().eq('user_id',userId); }catch(e){}
   }
+});
+
+// 앱이 백그라운드로 가도 (홈버튼 등) 통화 정리
+document.addEventListener('visibilitychange',()=>{
+  // 백그라운드 가는 것만으로 끊지는 않음 (잠깐 다른 앱 볼 수 있으니)
+  // WebRTC 연결 상태 감지가 실제 끊김을 처리함
 });
 </script>
 <!-- RESULT -->
