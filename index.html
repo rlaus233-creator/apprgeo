@@ -1321,31 +1321,36 @@ async function showResult(callSecs){
   } catch(e){ document.getElementById('usageText').textContent=''; }
 }
 async function showDemandCards(){
-  const countryNames={US:'미국',JP:'일본',KR:'한국',CN:'중국',GB:'영국',DE:'독일',FR:'프랑스',BR:'브라질',AU:'호주',IN:'인도',VN:'베트남',PH:'필리핀',TH:'태국',ID:'인도네시아'};
+  const countryNames={KR:'한국',JP:'일본',US:'미국',VN:'베트남',ID:'인도네시아'};
 
-  // 실시간 DB에서 대기 중인 사람들 나라별 카운트
-  const {data} = await db.from('matching_pool').select('target_country').eq('status','waiting');
+  // 실시간 DB에서 대기 중인 사람들 나라별 카운트 (실제 숫자만)
+  const {data} = await db.from('matching_pool').select('my_country').eq('status','waiting');
   const counts={};
   (data||[]).forEach(r=>{
-    counts[r.target_country]=(counts[r.target_country]||0)+1;
+    if(r.my_country) counts[r.my_country]=(counts[r.my_country]||0)+1;
   });
 
   const container=document.getElementById('demandCards');
   container.innerHTML='';
 
-  // 인기 나라 몇 개 보여주기 (실제 대기자 우선)
-  const popularCountries=['US','JP','KR','FR','BR'];
-  const cards=popularCountries.slice(0,3).map(c=>({
-    flag:flagMap[c]||'🌍',
-    name:countryNames[c],
-    count:counts[c]||Math.floor(Math.random()*12)+1
-  }));
+  const waiting=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
 
-  cards.forEach((d,i)=>{
+  // 아무도 없으면 정직하게 안내 (허수 없음)
+  if(waiting.length===0){
+    const el=document.createElement('div');
+    el.className='demand-card';
+    el.style.justifyContent='center';
+    el.innerHTML=`<div class="demand-text" style="text-align:center;color:var(--ink2);">친구를 찾고 있어요...</div>`;
+    container.appendChild(el);
+    return;
+  }
+
+  // 실제 대기자 있는 나라만 표시
+  waiting.slice(0,3).forEach(([c,cnt],i)=>{
     setTimeout(()=>{
       const el=document.createElement('div');
       el.className='demand-card';
-      el.innerHTML=`<div class="demand-flag">${d.flag}</div><div class="demand-text"><b>${d.name}</b> 친구들이 기다려요</div><div class="demand-count">${d.count}명 대기</div>`;
+      el.innerHTML=`<div class="demand-flag">${flagMap[c]||'🌍'}</div><div class="demand-text"><b>${countryNames[c]||c}</b> 친구가 기다려요</div><div class="demand-count">${cnt}명</div>`;
       container.appendChild(el);
     },i*300);
   });
