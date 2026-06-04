@@ -389,9 +389,14 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
     <button class="back-btn" onclick="show('onboard')">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <button class="back-btn" onclick="openProfileEdit()" title="내 프로필">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </button>
+    <div style="display:flex;gap:8px;">
+      <button class="back-btn" onclick="openFriends()" title="내 친구">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </button>
+      <button class="back-btn" onclick="openProfileEdit()" title="내 프로필">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+    </div>
   </div>
   <div class="setup-title-wrap">
     <div class="setup-title">어느 나라 친구를<br>만나고 싶어요?</div>
@@ -410,6 +415,20 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   <div class="setup-bottom" id="connectWrap" style="display:none;">
     <button class="btn-blue" id="connectBtn">연결 시작</button>
   </div>
+</div>
+
+<!-- FRIENDS -->
+<div class="screen" id="friends">
+  <div class="setup-nav">
+    <button class="back-btn" onclick="show('setup')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+  <div style="padding:8px 24px 0;margin-bottom:24px;">
+    <div style="font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:6px;">내 친구</div>
+    <div style="font-size:14px;color:var(--ink2);">접속 중인 친구에게 영상을 걸 수 있어요</div>
+  </div>
+  <div id="friendsList" style="flex:1;overflow-y:auto;padding:0 24px 24px;"></div>
 </div>
 
 <!-- MATCHING -->
@@ -482,6 +501,9 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
+        <button id="addFriendBtn" onclick="addCurrentFriend()" style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.3);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="친구 추가">
+          <svg id="addFriendIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
         <button onclick="reportUser()" style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.3);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="신고">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
         </button>
@@ -732,6 +754,7 @@ async function checkAuthSession(){
 
 // 로그인 후 화면 라우팅
 async function routeAfterAuth(){
+  setupFriendCallListener(); // 친구 영상 호출 받기 리스너 등록
   const{data}=await db.from('users').select('*').eq('user_id',userId).maybeSingle();
   if(data?.banned){
     document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;padding:40px;text-align:center;font-family:Pretendard,sans-serif;background:#fff;"><div style="font-size:48px;margin-bottom:20px;">🚫</div><div style="font-size:20px;font-weight:700;color:#111;margin-bottom:10px;">이용이 제한된 계정입니다</div><div style="font-size:14px;color:#888;line-height:1.6;">부적절한 행동으로 신고가 누적되어<br>서비스 이용이 제한되었습니다.<br><br>문의: rgeo.labs@gmail.com</div></div>';
@@ -1040,6 +1063,16 @@ async function startCall(room,isInit,partner){
   }
   const peerCountry=peerProfile?.my_country||partner?.my_country||null;
 
+  // 현재 통화 상대 정보 저장 (친구 추가용)
+  currentPeer={
+    user_id:partner?.user_id||null,
+    nickname:peerProfile?.nickname||null,
+    country:peerCountry,
+    avatar:peerProfile?.avatar_url||null
+  };
+  // 친구 추가 버튼 초기화 (이미 친구면 표시)
+  resetFriendButton(partner?.user_id);
+
   // 이름 (닉네임 있으면 닉네임, 없으면 나라명)
   const countryNames={KR:'한국',JP:'일본',US:'미국',VN:'베트남',ID:'인도네시아'};
   document.getElementById('peerNameText').textContent=peerProfile?.nickname||countryNames[peerCountry]||'친구';
@@ -1240,6 +1273,140 @@ async function confirmEndCall(){
 }
 
 // 다음 사람으로 넘기기 (스와이프 / 다음 버튼)
+// ===== 친구 기능 =====
+let currentPeer=null; // 현재 통화 상대
+
+// 친구 추가 버튼 상태 초기화 (이미 친구인지 확인)
+async function resetFriendButton(peerId){
+  const icon=document.getElementById('addFriendIcon');
+  if(!icon||!peerId)return;
+  icon.setAttribute('fill','none');
+  const{data}=await db.from('friends').select('id').eq('user_id',userId).eq('friend_id',peerId).maybeSingle();
+  if(data){ icon.setAttribute('fill','#FF6B4A'); } // 이미 친구면 채워진 하트
+}
+
+// 현재 통화 상대를 친구로 추가
+async function addCurrentFriend(){
+  if(!currentPeer||!currentPeer.user_id){ toast('상대 정보를 불러오는 중이에요'); return; }
+  const icon=document.getElementById('addFriendIcon');
+  // 이미 친구면 안내
+  const{data:exist}=await db.from('friends').select('id').eq('user_id',userId).eq('friend_id',currentPeer.user_id).maybeSingle();
+  if(exist){ toast('이미 친구로 추가했어요'); return; }
+  // 친구 추가
+  const{error}=await db.from('friends').insert({
+    user_id:userId,
+    friend_id:currentPeer.user_id,
+    friend_nickname:currentPeer.nickname,
+    friend_country:currentPeer.country,
+    friend_avatar:currentPeer.avatar
+  });
+  if(error){ toast('친구 추가에 실패했어요'); console.error(error); return; }
+  if(icon) icon.setAttribute('fill','#FF6B4A');
+  toast('친구로 추가했어요 ❤️');
+}
+
+// 친구 목록 페이지 열기
+async function openFriends(){
+  show('friends');
+  const list=document.getElementById('friendsList');
+  list.innerHTML='<div style="text-align:center;color:var(--ink3);padding:40px 0;">불러오는 중...</div>';
+
+  const{data:friends}=await db.from('friends').select('*').eq('user_id',userId).order('created_at',{ascending:false});
+  if(!friends||friends.length===0){
+    list.innerHTML='<div style="text-align:center;color:var(--ink2);padding:60px 20px;line-height:1.6;">아직 친구가 없어요.<br>영상통화 중 ❤️ 버튼을 눌러<br>친구를 추가해보세요.</div>';
+    return;
+  }
+
+  // 친구들의 온라인 상태 확인 (최근 2분 내 활동 = 온라인)
+  const ids=friends.map(f=>f.friend_id);
+  const{data:statuses}=await db.from('users').select('user_id,last_active,nickname,avatar_url,my_country').in('user_id',ids);
+  const statusMap={};
+  (statuses||[]).forEach(s=>{ statusMap[s.user_id]=s; });
+  const now=Date.now();
+  const countryNames={KR:'한국',JP:'일본',US:'미국',VN:'베트남',ID:'인도네시아'};
+
+  list.innerHTML='';
+  friends.forEach(f=>{
+    const s=statusMap[f.friend_id]||{};
+    const online = s.last_active && (now-new Date(s.last_active).getTime())<2*60*1000;
+    const nick=s.nickname||f.friend_nickname||'친구';
+    const country=s.my_country||f.friend_country;
+    const avatar=s.avatar_url||f.friend_avatar;
+    const flag=flagMap[country]||'🌍';
+
+    const el=document.createElement('div');
+    el.style.cssText='display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:10px;';
+    el.innerHTML=`
+      <div style="position:relative;width:48px;height:48px;flex-shrink:0;">
+        <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center;font-size:22px;">
+          ${avatar?`<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;">`:flag}
+        </div>
+        <div style="position:absolute;bottom:0;right:0;width:14px;height:14px;border-radius:50%;border:2px solid var(--card);background:${online?'#22c55e':'#bbb'};"></div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:16px;font-weight:700;">${nick} <span style="font-size:13px;">${flag}</span></div>
+        <div style="font-size:13px;color:${online?'#22c55e':'var(--ink3)'};font-weight:600;">${online?'● 지금 접속 중':'오프라인'}</div>
+      </div>
+      ${online?`<button onclick="callFriend('${f.friend_id}','${(nick||'').replace(/'/g,'')}')" style="padding:10px 16px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">영상 걸기</button>`:`<button onclick="deleteFriend('${f.friend_id}')" style="padding:8px 12px;background:transparent;color:var(--ink3);border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:12px;cursor:pointer;">삭제</button>`}
+    `;
+    list.appendChild(el);
+  });
+}
+
+// 친구 삭제
+async function deleteFriend(friendId){
+  const ok=await showConfirm('이 친구를 삭제할까요?');
+  if(!ok)return;
+  await db.from('friends').delete().eq('user_id',userId).eq('friend_id',friendId);
+  openFriends();
+}
+
+// 온라인 친구에게 영상 걸기
+async function callFriend(friendId, nick){
+  toast(`${nick}님에게 연결 중...`);
+  // 친구 전용 룸 생성
+  const room='friend_'+crypto.randomUUID();
+  // 친구에게 연결 요청 신호 보내기 (친구가 앱 켜고 있으면 받음)
+  const inviteCh=db.channel('invite_'+friendId);
+  await inviteCh.subscribe();
+  inviteCh.send({
+    type:'broadcast',
+    event:'friend_call',
+    payload:{ from:userId, fromNick:(await getMyNick()), room }
+  });
+  // 나는 방에 들어가서 상대를 기다림 (내가 init)
+  setTimeout(()=>{
+    inviteCh.unsubscribe();
+    startCall(room, true, {user_id:friendId});
+  },500);
+}
+
+async function getMyNick(){
+  const{data}=await db.from('users').select('nickname').eq('user_id',userId).maybeSingle();
+  return data?.nickname||'친구';
+}
+
+// 친구가 거는 영상 호출 받기
+let friendCallCh=null;
+function setupFriendCallListener(){
+  if(friendCallCh)return;
+  friendCallCh=db.channel('invite_'+userId);
+  friendCallCh
+    .on('broadcast',{event:'friend_call'},async({payload:p})=>{
+      if(!p||p.from===userId)return;
+      // 통화 중이면 무시
+      if(callCh){ return; }
+      const ok=await showConfirm(`${p.fromNick||'친구'}님이 영상 통화를 걸어요. 받을까요?`);
+      if(ok){
+        // 상대가 init이므로 나는 answer쪽
+        await ensureStream();
+        startCall(p.room, false, {user_id:p.from});
+      }
+    })
+    .subscribe();
+}
+
+
 let nexting=false;
 async function nextMatch(){
   if(nexting||callEnding)return;
@@ -1632,33 +1799,6 @@ function stopStream(){
   localStream=null;
 }
 function cleanup(){cleanupCall();show('setup');}
-
-// 통화 화면에서 위로 스와이프 → 다음 사람
-(function(){
-  const callScreen=document.getElementById('call');
-  let startY=0, startX=0, swiping=false;
-  callScreen.addEventListener('touchstart',e=>{
-    // 컨트롤 버튼 영역은 제외 (버튼 누르는 것과 구분)
-    if(e.target.closest('.call-controls')||e.target.closest('.call-top'))return;
-    startY=e.touches[0].clientY;
-    startX=e.touches[0].clientX;
-    swiping=true;
-  },{passive:true});
-  callScreen.addEventListener('touchend',e=>{
-    if(!swiping)return;
-    swiping=false;
-    const dy=startY-e.changedTouches[0].clientY; // 위로 스와이프면 양수
-    const dx=Math.abs(startX-e.changedTouches[0].clientX);
-    // 세로로 80px 이상 위로, 가로 이동은 적을 때만 (실수 방지)
-    if(dy>80 && dx<60){
-      // 통화 중일 때만 (대기 중엔 무시)
-      if(callScreen.classList.contains('on') && callCh && !nexting && !callEnding){
-        nextMatch();
-      }
-    }
-  },{passive:true});
-})();
-
 
 // 페이지 떠날 때 매칭 풀에서 제거 (유령 대기자 방지)
 window.addEventListener('beforeunload',()=>{
