@@ -814,11 +814,24 @@ function initRows(id,key){
   });
 }
 initRows('countryRows','country');
+
+// 카메라/마이크 스트림을 한 번만 얻어서 재사용 (iOS 권한 반복요청 방지)
+async function ensureStream(){
+  // 이미 살아있는 스트림이 있으면 재사용
+  if(localStream && localStream.getVideoTracks().some(t=>t.readyState==='live')){
+    return localStream;
+  }
+  localStream=await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:'user'},
+    audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:true,channelCount:1,sampleRate:16000}
+  });
+  return localStream;
+}
+
 document.getElementById('connectBtn').addEventListener('click', async()=>{
-  // 연결 버튼 클릭 시 권한 요청
+  // 연결 버튼 클릭 시 스트림 확보 (이미 있으면 재사용)
   try{
-    const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-    stream.getTracks().forEach(t=>t.stop());
+    await ensureStream();
     await getCameras();
     startMatch();
   }catch(e){
@@ -862,10 +875,7 @@ document.getElementById('testBtn').addEventListener('click',async()=>{
   clearInterval(timerIv);
   timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
   try{
-    localStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:'user'},
-      audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:true,channelCount:1,sampleRate:16000}
-    });
+    await ensureStream();
     document.getElementById('localVideo').srcObject=localStream;
     setTimeout(()=>{
       if(!localStream)return;
@@ -1004,7 +1014,7 @@ async function startCall(room,isInit,partner){
     document.getElementById('callAvatarFallback').textContent=flagMap[partner?.target_country]||'🌍';
   }
   timerSec=0;timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
-  localStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:true,channelCount:1,sampleRate:16000}});
+  await ensureStream();
   document.getElementById('localVideo').srcObject=localStream;
   document.getElementById('localVideo').classList.remove('pip');
   document.getElementById('waitingOverlay').style.display='flex';
@@ -1473,9 +1483,14 @@ function cleanupCall(){
   stopSTT();
   clearInterval(timerIv);
   pc?.close();pc=null;
-  localStream?.getTracks().forEach(t=>t.stop());localStream=null;
+  // 스트림은 끄지 않고 유지 (다음 통화에 재사용 → iOS 권한 반복요청 방지)
   callCh?.unsubscribe();callCh=null;
   db.from('matching_pool').delete().eq('user_id',userId);
+}
+// 카메라/마이크 완전 종료 (앱을 떠날 때만)
+function stopStream(){
+  localStream?.getTracks().forEach(t=>t.stop());
+  localStream=null;
 }
 function cleanup(){cleanupCall();show('setup');}
 
@@ -1485,6 +1500,7 @@ window.addEventListener('beforeunload',()=>{
   if(callCh){
     try{ callCh.send({type:'broadcast',event:'end',payload:{}}); }catch(e){}
   }
+  stopStream(); // 앱 떠날 때 카메라 완전 종료
   if(userId){
     try{
       navigator.sendBeacon(
