@@ -303,9 +303,14 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 
 <!-- PROFILE -->
 <div class="screen" id="profile">
-  <div style="padding:56px 24px 0;margin-bottom:32px;">
-    <div style="font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:6px;">프로필 설정</div>
-    <div style="font-size:14px;color:var(--ink2);">한 번만 설정하면 돼요</div>
+  <div style="padding:56px 24px 0;margin-bottom:32px;display:flex;align-items:flex-start;gap:12px;">
+    <button id="profileBackBtn" class="back-btn" onclick="show('setup')" style="display:none;margin-top:2px;">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div>
+      <div id="profileTitle" style="font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:6px;">프로필 설정</div>
+      <div id="profileSubtitle" style="font-size:14px;color:var(--ink2);">한 번만 설정하면 돼요</div>
+    </div>
   </div>
 
   <div style="padding:0 24px;display:flex;flex-direction:column;gap:20px;flex:1;">
@@ -347,11 +352,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 
     <div>
       <div class="seg-label" style="margin-bottom:8px;">나이대</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="ageGrid">
-        <div class="pick-row" data-val="10s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">10대</div></div>
-        <div class="pick-row" data-val="20s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">20대</div></div>
-        <div class="pick-row" data-val="30s" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">30대</div></div>
-        <div class="pick-row" data-val="40s+" style="flex-direction:column;padding:12px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;">40대+</div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="ageGrid">
+        <div class="pick-row" data-val="20s" style="flex-direction:column;padding:14px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:16px;font-weight:700;">20대</div></div>
+        <div class="pick-row" data-val="30s" style="flex-direction:column;padding:14px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:16px;font-weight:700;">30대</div></div>
+        <div class="pick-row" data-val="40s" style="flex-direction:column;padding:14px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:16px;font-weight:700;">40대</div></div>
+        <div class="pick-row" data-val="50s" style="flex-direction:column;padding:14px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:16px;font-weight:700;">50대</div></div>
+        <div class="pick-row" data-val="60s+" style="flex-direction:column;padding:14px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:16px;font-weight:700;">60대+</div></div>
       </div>
     </div>
 
@@ -367,7 +373,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
   </div>
 
   <div class="setup-bottom">
-    <button class="btn-blue" onclick="saveProfile()">시작하기</button>
+    <button class="btn-blue" id="profileSaveBtn" onclick="saveProfile()">시작하기</button>
   </div>
 </div>
 <div class="screen" id="onboard" style="background:#1a1a1a;">
@@ -386,9 +392,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-widt
 
 <!-- SETUP -->
 <div class="screen" id="setup">
-  <div class="setup-nav">
+  <div class="setup-nav" style="justify-content:space-between;">
     <button class="back-btn" onclick="show('onboard')">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="back-btn" onclick="openProfileEdit()" title="내 프로필">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </button>
   </div>
   <div class="setup-title-wrap">
@@ -547,8 +556,8 @@ const DB_KEY='sb_publishable_o7KC9YG-VnoqKMaWUauY5w_Ved962JU';
 const db=window.supabase.createClient(DB_URL,DB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
 
 const langToDeepL={ko:'KO',en:'EN',ja:'JA',zh:'ZH',es:'ES',fr:'FR',de:'DE',pt:'PT'};
-const countryToLang={KR:'ko',US:'en',JP:'ja',CN:'zh',GB:'en',DE:'de',FR:'fr',BR:'pt',AU:'en',IN:'en'};
-const flagMap={US:'🇺🇸',JP:'🇯🇵',KR:'🇰🇷',CN:'🇨🇳',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',BR:'🇧🇷',AU:'🇦🇺',IN:'🇮🇳'};
+const countryToLang={KR:'ko',US:'en',JP:'ja',CN:'zh',GB:'en',DE:'de',FR:'fr',BR:'pt',AU:'en',IN:'en',VN:'vi',PH:'en',TH:'th',ID:'id'};
+const flagMap={US:'🇺🇸',JP:'🇯🇵',KR:'🇰🇷',CN:'🇨🇳',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',BR:'🇧🇷',AU:'🇦🇺',IN:'🇮🇳',VN:'🇻🇳',PH:'🇵🇭',TH:'🇹🇭',ID:'🇮🇩'};
 
 let cameraDevices=[];
 let myLang=null,targetCountry=null,userId=localStorage.getItem('rgeo_uid')||crypto.randomUUID();
@@ -714,29 +723,78 @@ function initSimpleGrid(id,setter){
   });
 }
 var ageGroup=null, gender=null, myCountry=null;
+var isProfileEditMode=false;
 initSimpleGrid('ageGrid',v=>ageGroup=v);
 initSimpleGrid('genderGrid',v=>gender=v);
 initSimpleGrid('myCountryGrid',v=>myCountry=v);
+
+// 그리드에서 특정 값을 선택 상태로 표시
+function setGridValue(gridId,val){
+  if(!val)return;
+  document.getElementById(gridId).querySelectorAll('.pick-row').forEach(r=>{
+    if(r.dataset.val===val){ r.classList.add('sel'); r.style.background='var(--blue-light)'; }
+    else { r.classList.remove('sel'); r.style.background='var(--bg)'; }
+  });
+}
+
+// 내 프로필 수정 열기 - 기존 데이터 불러오기
+async function openProfileEdit(){
+  isProfileEditMode=true;
+  document.getElementById('profileTitle').textContent='내 프로필';
+  document.getElementById('profileSubtitle').textContent='정보를 수정할 수 있어요';
+  document.getElementById('profileBackBtn').style.display='flex';
+  document.getElementById('profileSaveBtn').textContent='저장하기';
+
+  // 기존 데이터 불러오기
+  const{data}=await db.from('users').select('*').eq('user_id',userId).maybeSingle();
+  if(data){
+    document.getElementById('nicknameInput').value=data.nickname||'';
+    myCountry=data.my_country||null;
+    ageGroup=data.age_group||null;
+    gender=data.gender||null;
+    setGridValue('myCountryGrid',myCountry);
+    setGridValue('ageGrid',ageGroup);
+    setGridValue('genderGrid',gender);
+    if(data.avatar_url){
+      avatarDataUrl=data.avatar_url;
+      document.getElementById('avatarPreview').src=data.avatar_url;
+      document.getElementById('avatarPreview').style.display='block';
+      document.getElementById('avatarPlaceholder').style.display='none';
+    }
+  }
+  show('profile');
+}
 
 async function saveProfile(){
   const nickname=document.getElementById('nicknameInput').value.trim();
   if(!nickname){toast('닉네임을 입력해주세요');return;}
   if(!myCountry){toast('내 나라를 선택해주세요');return;}
   if(!ageGroup){toast('나이대를 선택해주세요');return;}
-  await db.from('users').upsert({
+
+  const profile={
     user_id:userId,
     nickname,
     my_country:myCountry,
     age_group:ageGroup,
     gender:gender||'none',
     avatar_url:avatarDataUrl||null,
-    first_active:new Date().toISOString().slice(0,10),
-    last_active:new Date().toISOString(),
-    created_at:new Date().toISOString()
-  });
+    last_active:new Date().toISOString()
+  };
+  // 신규 가입이면 가입일 기록
+  if(!isProfileEditMode){
+    profile.first_active=new Date().toISOString().slice(0,10);
+    profile.created_at=new Date().toISOString();
+  }
+  await db.from('users').upsert(profile);
   localStorage.setItem('rgeo_country',myCountry);
   if(avatarDataUrl) localStorage.setItem('rgeo_avatar',avatarDataUrl);
-  show('onboard');
+  if(isProfileEditMode){
+    isProfileEditMode=false;
+    toast('프로필이 수정되었어요');
+    show('setup');
+  } else {
+    show('onboard');
+  }
 }
 
 // 기기 언어 자동 감지
@@ -846,6 +904,10 @@ async function startMatch(){
     premBtn.style.display='none';
   }
 
+  // 내 나이대 가져오기 (또래 우선 매칭용)
+  const{data:myProfile}=await db.from('users').select('age_group').eq('user_id',userId).maybeSingle();
+  const myAge=myProfile?.age_group||null;
+
   // 내 정보 매칭 풀에 등록 (프리미엄이면 우선순위 표시)
   await db.from('matching_pool').upsert({
     user_id:userId,
@@ -854,6 +916,7 @@ async function startMatch(){
     target_country:targetCountry,
     status:'waiting',
     is_premium:isPremium,
+    age_group:myAge,
     created_at:new Date().toISOString()
   });
 
@@ -879,7 +942,21 @@ async function startMatch(){
     .limit(10);
 
   // 차단·밴 제외한 후보들
-  const candidates=(matches||[]).filter(m=>!blocked.includes(m.user_id) && !bannedIds.includes(m.user_id));
+  let candidates=(matches||[]).filter(m=>!blocked.includes(m.user_id) && !bannedIds.includes(m.user_id));
+
+  // 또래 우선 정렬 - 내 나이대와 가까운 순 (프리미엄은 그대로 위)
+  const ageNum={'20s':20,'30s':30,'40s':40,'50s':50,'60s+':60};
+  if(myAge && ageNum[myAge]){
+    const myAgeN=ageNum[myAge];
+    candidates.sort((a,b)=>{
+      // 프리미엄 먼저
+      if(a.is_premium!==b.is_premium) return b.is_premium?1:-1;
+      // 그 다음 나이 가까운 순
+      const da=Math.abs((ageNum[a.age_group]||40)-myAgeN);
+      const db2=Math.abs((ageNum[b.age_group]||40)-myAgeN);
+      return da-db2;
+    });
+  }
 
   // 후보를 하나씩 시도 - 충돌 방지 (낙관적 잠금)
   let matched=null;
@@ -1065,7 +1142,7 @@ async function showResult(callSecs){
   } catch(e){ document.getElementById('usageText').textContent=''; }
 }
 async function showDemandCards(){
-  const countryNames={US:'미국',JP:'일본',KR:'한국',CN:'중국',GB:'영국',DE:'독일',FR:'프랑스',BR:'브라질',AU:'호주',IN:'인도'};
+  const countryNames={US:'미국',JP:'일본',KR:'한국',CN:'중국',GB:'영국',DE:'독일',FR:'프랑스',BR:'브라질',AU:'호주',IN:'인도',VN:'베트남',PH:'필리핀',TH:'태국',ID:'인도네시아'};
 
   // 실시간 DB에서 대기 중인 사람들 나라별 카운트
   const {data} = await db.from('matching_pool').select('target_country').eq('status','waiting');
