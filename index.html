@@ -961,9 +961,10 @@ async function startCall(room,isInit,partner){
     .on('broadcast',{event:'end'},()=>endCall())
     .subscribe(async()=>{if(isInit){const o=await pc.createOffer();await pc.setLocalDescription(o);callCh.send({type:'broadcast',event:'offer',payload:{o,f:userId}});}});
 
-  // STT 시작
-  const myLangCode=myLang||'ko';
-  const peerLangCode=countryToLang[partner?.target_country]||'en';
+  // STT 시작 - 언어는 '나라' 기준으로 정확히 결정
+  const savedCountry=localStorage.getItem('rgeo_country')||'KR';
+  const myLangCode=countryToLang[savedCountry]||'ko';        // 내 나라 → 내 언어
+  const peerLangCode=countryToLang[partner?.my_country]||'en'; // 상대 나라 → 상대 언어
   // 같은 언어면 번역 끄기
   const needTranslation=myLangCode!==peerLangCode;
   startMySTT(localStream, myLangCode, needTranslation?peerLangCode:myLangCode, false);
