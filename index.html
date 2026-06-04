@@ -633,6 +633,8 @@ async function initPermissions(){
   }
 }
 
+setupDeepLinkAuth(); // 앱: 딥링크 로그인 복귀 리스너 등록
+
 setTimeout(async()=>{
   await initPermissions();
   // 구글 세션 있으면 onAuthStateChange가 처리하므로 여기선 건드리지 않음
@@ -664,12 +666,54 @@ async function prefillProfile(){
 }
 
 // 구글 로그인
+// Capacitor 앱에서 실행 중인지 감지
+function isNativeApp(){
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
 async function loginWithGoogle(){
-  const{error}=await db.auth.signInWithOAuth({
+  const redirectTo = isNativeApp()
+    ? 'com.rgeo.app://login-callback'   // 앱: 딥링크로 복귀
+    : window.location.href.split('?')[0].split('#')[0]; // 웹: 현재 주소
+
+  const{data,error}=await db.auth.signInWithOAuth({
     provider:'google',
-    options:{redirectTo:window.location.href.split('?')[0].split('#')[0]}
+    options:{
+      redirectTo,
+      skipBrowserRedirect: isNativeApp() // 앱이면 자동 이동 막고 직접 연다
+    }
   });
-  if(error){ toast('로그인 중 오류가 발생했어요'); console.error(error); }
+  if(error){ toast('로그인 중 오류가 발생했어요'); console.error(error); return; }
+
+  // 앱이면 인앱 브라우저로 OAuth URL 열기
+  if(isNativeApp() && data?.url){
+    const{Browser}=window.Capacitor.Plugins;
+    await Browser.open({url:data.url});
+  }
+}
+
+// 앱: 로그인 후 com.rgeo.app:// 으로 돌아왔을 때 토큰 처리
+function setupDeepLinkAuth(){
+  if(!isNativeApp()) return;
+  const{App,Browser}=window.Capacitor.Plugins;
+  App.addListener('appUrlOpen', async ({url})=>{
+    if(url && url.includes('login-callback')){
+      try{ await Browser.close(); }catch(e){}
+      // URL에서 토큰 추출 (code 또는 access_token 방식 모두 대응)
+      try{
+        if(url.includes('code=')){
+          const code=new URL(url).searchParams.get('code');
+          if(code) await db.auth.exchangeCodeForSession(code);
+        } else if(url.includes('access_token')){
+          const params=new URLSearchParams(url.split('#')[1]);
+          await db.auth.setSession({
+            access_token:params.get('access_token'),
+            refresh_token:params.get('refresh_token')
+          });
+        }
+      }catch(e){ console.error('딥링크 세션 처리 실패',e); }
+    }
+  });
 }
 
 // 로그인 세션 확인 (OAuth 리다이렉트 후)
@@ -1032,11 +1076,14 @@ async function startCall(room,isInit,partner){
   ]});
   localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
 
+  // ICE candidate 큐 (remoteDescription 설정 전에 도착한 것 보관)
+  let pendingCandidates=[];
+  let remoteSet=false;
+
   // 연결 상태 감지 - 상대가 끊기면 자동 종료
   pc.onconnectionstatechange=()=>{
     console.log('연결 상태:', pc.connectionState);
     if(pc.connectionState==='disconnected' || pc.connectionState==='failed'){
-      // 일시적 끊김일 수 있으니 3초 후에도 복구 안 되면 종료
       setTimeout(()=>{
         if(pc && (pc.connectionState==='disconnected'||pc.connectionState==='failed'||pc.connectionState==='closed')){
           handlePeerDisconnect();
@@ -1046,14 +1093,15 @@ async function startCall(room,isInit,partner){
   };
   pc.oniceconnectionstatechange=()=>{
     if(pc.iceConnectionState==='failed'){
-      handlePeerDisconnect();
+      // 실패 시 ICE 재시작 시도
+      try{ pc.restartIce(); }catch(e){}
+      setTimeout(()=>{ if(pc && pc.iceConnectionState==='failed') handlePeerDisconnect(); },4000);
     }
   };
 
   pc.ontrack=e=>{
     const remote=document.getElementById('remoteVideo');
     remote.srcObject=e.streams[0];
-    // 상대방 연결되면 내 화면 PIP로 전환
     setTimeout(()=>{
       remote.style.opacity='1';
       const local=document.getElementById('localVideo');
@@ -1063,15 +1111,79 @@ async function startCall(room,isInit,partner){
       initDraggable();
     },300);
   };
+
   callCh=db.channel('call_'+roomId);
-  pc.onicecandidate=e=>{if(e.candidate)callCh.send({type:'broadcast',event:'ice',payload:{c:e.candidate,f:userId}});};
+
+  // ICE candidate 생기면 전송 (큐 안전장치 포함)
+  pc.onicecandidate=e=>{
+    if(e.candidate && callCh){
+      callCh.send({type:'broadcast',event:'ice',payload:{c:e.candidate,f:userId}});
+    }
+  };
+
+  // 큐에 쌓인 ICE candidate를 한꺼번에 추가
+  async function flushCandidates(){
+    remoteSet=true;
+    for(const c of pendingCandidates){
+      try{ await pc.addIceCandidate(c); }catch(e){console.warn('ICE 추가 실패',e);}
+    }
+    pendingCandidates=[];
+  }
+
   callCh
-    .on('broadcast',{event:'offer'},async({payload:p})=>{if(p.f===userId)return;await pc.setRemoteDescription(p.o);const a=await pc.createAnswer();await pc.setLocalDescription(a);callCh.send({type:'broadcast',event:'answer',payload:{a,f:userId}});})
-    .on('broadcast',{event:'answer'},async({payload:p})=>{if(p.f===userId)return;await pc.setRemoteDescription(p.a);})
-    .on('broadcast',{event:'ice'},async({payload:p})=>{if(p.f===userId)return;try{await pc.addIceCandidate(p.c);}catch(e){}})
+    .on('broadcast',{event:'offer'},async({payload:p})=>{
+      if(p.f===userId)return;
+      try{
+        await pc.setRemoteDescription(p.o);
+        await flushCandidates();
+        const a=await pc.createAnswer();
+        await pc.setLocalDescription(a);
+        callCh.send({type:'broadcast',event:'answer',payload:{a,f:userId}});
+      }catch(e){console.error('offer 처리 실패',e);}
+    })
+    .on('broadcast',{event:'answer'},async({payload:p})=>{
+      if(p.f===userId)return;
+      try{
+        await pc.setRemoteDescription(p.a);
+        await flushCandidates();
+      }catch(e){console.error('answer 처리 실패',e);}
+    })
+    .on('broadcast',{event:'ice'},async({payload:p})=>{
+      if(p.f===userId)return;
+      // remoteDescription 설정 전이면 큐에 보관
+      if(remoteSet){
+        try{ await pc.addIceCandidate(p.c); }catch(e){console.warn('ICE 추가 실패',e);}
+      } else {
+        pendingCandidates.push(p.c);
+      }
+    })
     .on('broadcast',{event:'subtitle'},({payload:p})=>{if(p.from===userId)return;showPeerSubtitle(p.text);})
+    .on('broadcast',{event:'ready'},async({payload:p})=>{
+      if(p.f===userId)return;
+      // 상대가 준비됐다고 알리면, init쪽이 offer 보냄 (타이밍 보장)
+      if(isInit){
+        const o=await pc.createOffer();
+        await pc.setLocalDescription(o);
+        callCh.send({type:'broadcast',event:'offer',payload:{o,f:userId}});
+      }
+    })
     .on('broadcast',{event:'end'},()=>endCall())
-    .subscribe(async()=>{if(isInit){const o=await pc.createOffer();await pc.setLocalDescription(o);callCh.send({type:'broadcast',event:'offer',payload:{o,f:userId}});}});
+    .subscribe(async(status)=>{
+      if(status!=='SUBSCRIBED')return;
+      // 구독 완료 후: answer쪽은 "준비됨" 신호, init쪽도 offer 보냄(이중 안전장치)
+      if(isInit){
+        // init은 약간 기다렸다가 offer (상대 구독 시간 확보)
+        setTimeout(async()=>{
+          if(!pc || pc.signalingState==='closed')return;
+          const o=await pc.createOffer();
+          await pc.setLocalDescription(o);
+          callCh.send({type:'broadcast',event:'offer',payload:{o,f:userId}});
+        },800);
+      } else {
+        // answer쪽은 준비됐다고 알림 → init이 offer 보냄
+        callCh.send({type:'broadcast',event:'ready',payload:{f:userId}});
+      }
+    });
 
   // STT 시작 - 언어는 '나라' 기준으로 정확히 결정
   const savedCountry=localStorage.getItem('rgeo_country')||'KR';
