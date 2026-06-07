@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Globut Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a14;--card:#14141f;--card2:#1c1c2b;--ink:#f0f0f8;--ink2:rgba(240,240,248,.5);--ink3:rgba(240,240,248,.3);--line:rgba(255,255,255,.06);--blue:#5b8def;--green:#22c55e;--orange:#FF6B4A;--purple:#a855f7;--red:#ef4444;--yellow:#eab308;}
+body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:24px;}
+.wrap{max-width:1100px;margin:0 auto;}
+.head{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+.logo{font-size:24px;font-weight:800;letter-spacing:-.03em;}
+.logo span{color:var(--orange);}
+.head-sub{font-size:13px;color:var(--ink2);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;animation:blink 1.4s ease infinite;}
+@keyframes blink{0%,100%{opacity:.3;}50%{opacity:1;}}
+.refresh{padding:8px 16px;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--ink2);font-family:inherit;font-size:13px;cursor:pointer;}
+
+.section-label{font-size:13px;font-weight:700;color:var(--ink2);letter-spacing:.04em;margin:8px 2px 14px;text-transform:uppercase;}
+
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+@media(max-width:768px){.grid{grid-template-columns:repeat(2,1fr);}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;}
+.stat-label{font-size:13px;color:var(--ink2);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.stat-val{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+.stat-unit{font-size:15px;color:var(--ink3);font-weight:500;margin-left:4px;}
+.stat-sub{font-size:12px;color:var(--ink3);margin-top:8px;}
+
+/* 서버 상태 카드 */
+.health{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;}
+.health.warn{border-color:rgba(234,179,8,.4);}
+.health.danger{border-color:rgba(239,68,68,.5);}
+.health-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;}
+.health-label{font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:6px;}
+.health-pct{font-size:13px;font-weight:700;}
+.health-val{font-size:30px;font-weight:800;line-height:1;margin-bottom:14px;}
+.health-val small{font-size:14px;color:var(--ink3);font-weight:500;}
+.gauge{height:8px;background:var(--card2);border-radius:100px;overflow:hidden;}
+.gauge-fill{height:100%;border-radius:100px;transition:width .6s;}
+.health-note{font-size:11px;color:var(--ink3);margin-top:8px;}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+@media(max-width:768px){.row2{grid-template-columns:1fr;}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;}
+.panel-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}
+.panel-title .cnt{font-size:12px;color:var(--ink3);font-weight:500;}
+
+.country-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.country-flag{font-size:22px;width:30px;}
+.country-name{font-size:14px;width:80px;color:var(--ink2);}
+.country-bar-wrap{flex:1;height:8px;background:var(--card2);border-radius:100px;overflow:hidden;}
+.country-bar{height:100%;background:linear-gradient(90deg,var(--orange),#ff9472);border-radius:100px;transition:width .6s;}
+.country-cnt{font-size:13px;font-weight:600;width:36px;text-align:right;}
+
+.live-list{display:flex;flex-direction:column;gap:10px;}
+.live-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card2);border-radius:12px;}
+.live-flag{font-size:20px;}
+.live-info{flex:1;font-size:13px;}
+.live-arrow{color:var(--ink3);font-size:12px;}
+.live-wait{font-size:11px;color:var(--green);background:rgba(34,197,94,.12);padding:3px 8px;border-radius:100px;}
+.live-call{font-size:11px;color:var(--blue);background:rgba(91,141,239,.12);padding:3px 8px;border-radius:100px;}
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:30px 0;}
+.loading{text-align:center;color:var(--ink3);font-size:14px;padding:60px 0;}
+</style>
+</head>
+<body>
+<div id="lockScreen" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;padding:24px;">
+  <div style="font-size:24px;font-weight:800;margin-bottom:8px;">Globut <span style="color:var(--orange);">Admin</span></div>
+  <div style="font-size:13px;color:var(--ink2);margin-bottom:24px;">관리자 비밀번호를 입력하세요</div>
+  <input id="pwInput" type="password" placeholder="비밀번호" style="width:100%;max-width:280px;padding:14px 16px;background:var(--card2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:inherit;font-size:15px;outline:none;text-align:center;margin-bottom:12px;" onkeydown="if(event.key==='Enter')tryUnlock()">
+  <button onclick="tryUnlock()" style="width:100%;max-width:280px;padding:14px;background:var(--orange);border:none;border-radius:12px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;">들어가기</button>
+  <div id="pwError" style="font-size:13px;color:var(--red);margin-top:12px;height:18px;"></div>
+</div>
+
+<div class="wrap" id="adminWrap" style="display:none;">
+  <div class="head">
+    <div>
+      <div class="logo">Globut <span>Admin</span></div>
+      <div class="head-sub"><span class="live-dot"></span><span id="lastUpdate">실시간 업데이트 중</span></div>
+    </div>
+    <button class="refresh" onclick="loadAll()">새로고침</button>
+  </div>
+
+  <div id="content">
+    <div class="loading">데이터를 불러오는 중...</div>
+  </div>
+</div>
+
+<script>
+const db=window.supabase.createClient('https://qenuwywkrjsvxgurkcbe.supabase.co','sb_publishable_o7KC9YG-VnoqKMaWUauY5w_Ved962JU');
+const flags={KR:'🇰🇷',JP:'🇯🇵',US:'🇺🇸',GB:'🇬🇧',AU:'🇦🇺',CA:'🇨🇦',VN:'🇻🇳',ID:'🇮🇩',TH:'🇹🇭',MY:'🇲🇾',PH:'🇵🇭',IN:'🇮🇳',CN:'🇨🇳',TW:'🇹🇼',TR:'🇹🇷',DE:'🇩🇪',FR:'🇫🇷',ES:'🇪🇸',IT:'🇮🇹',NL:'🇳🇱',BR:'🇧🇷',PT:'🇵🇹',MX:'🇲🇽',AR:'🇦🇷',RU:'🇷🇺',UA:'🇺🇦',PL:'🇵🇱',SE:'🇸🇪',NO:'🇳🇴',DK:'🇩🇰',FI:'🇫🇮',GR:'🇬🇷',RO:'🇷🇴',CZ:'🇨🇿',HU:'🇭🇺',BG:'🇧🇬',SK:'🇸🇰'};
+const names={KR:'한국',JP:'일본',US:'미국',GB:'영국',AU:'호주',CA:'캐나다',VN:'베트남',ID:'인도네시아',TH:'태국',MY:'말레이시아',PH:'필리핀',IN:'인도',CN:'중국',TW:'대만',TR:'터키',DE:'독일',FR:'프랑스',ES:'스페인',IT:'이탈리아',NL:'네덜란드',BR:'브라질',PT:'포르투갈',MX:'멕시코',AR:'아르헨티나',RU:'러시아',UA:'우크라이나',PL:'폴란드',SE:'스웨덴',NO:'노르웨이',DK:'덴마크',FI:'핀란드',GR:'그리스',RO:'루마니아',CZ:'체코',HU:'헝가리',BG:'불가리아',SK:'슬로바키아'};
+
+// Supabase 무료 티어 한계 (이 수치 대비 위험도 표시)
+const FREE_CONN_LIMIT=200;   // 무료 동시 Realtime 연결
+const SAFE_CONCURRENT=130;   // 우리 앱 기준 안전 동접 (연결 여유 고려)
+
+function gaugeColor(pct){
+  if(pct>=85) return 'var(--red)';
+  if(pct>=60) return 'var(--yellow)';
+  return 'var(--green)';
+}
+
+async function loadAll(){
+  try{
+    const [usersRes, poolRes, matchedRes, callsRes, reportsRes] = await Promise.all([
+      db.from('users').select('*'),
+      db.from('matching_pool').select('*').eq('status','waiting'),
+      db.from('matching_pool').select('*').eq('status','matched'),
+      db.from('calls').select('*'),
+      db.from('reports').select('*')
+    ]);
+
+    const users=usersRes.data||[];
+    const pool=poolRes.data||[];
+    const matched=matchedRes.data||[];
+    const calls=callsRes.data||[];
+    const reports=reportsRes.data||[];
+
+    const now=Date.now();
+    const day=24*60*60*1000;
+    const today=new Date().toISOString().slice(0,10);
+
+    // ===== 서버 상태 계산 =====
+    // 실시간 동접 (2분 내 활동) = 실제 연결 추정
+    const liveConcurrent=users.filter(u=>u.last_active && (now-new Date(u.last_active).getTime())<2*60*1000).length;
+    // 현재 통화 중인 쌍
+    const activeCalls=Math.floor(matched.length/2);
+    // 대기 중
+    const waiting=pool.length;
+    // 유령 대기자 (2분 이상 waiting - 앱 끄고 나간 사람)
+    const ghosts=pool.filter(p=>p.created_at && (now-new Date(p.created_at).getTime())>2*60*1000).length;
+    // 추정 연결 수 (동접 1개 + 통화중 추가 1개)
+    const estConnections=liveConcurrent + activeCalls;
+    const connPct=Math.min(Math.round(estConnections/FREE_CONN_LIMIT*100),100);
+    // 매칭 건강도: 대기자 대비 통화 비율
+    const matchHealth = waiting+activeCalls>0 ? Math.round(activeCalls/(waiting+activeCalls)*100) : 0;
+
+    // ===== 비즈니스 지표 =====
+    const todayCalls=calls.filter(c=>c.created_at?.slice(0,10)===today);
+    const avgDuration=calls.length?Math.round(calls.reduce((s,c)=>s+(c.duration_seconds||0),0)/calls.length):0;
+    const ratedCalls=calls.filter(c=>c.rating);
+    const avgRating=ratedCalls.length?(ratedCalls.reduce((s,c)=>s+c.rating,0)/ratedCalls.length).toFixed(1):'-';
+    const dau=users.filter(u=>u.last_active && (now-new Date(u.last_active).getTime())<day).length;
+    const wau=users.filter(u=>u.last_active && (now-new Date(u.last_active).getTime())<7*day).length;
+    const mau=users.filter(u=>u.last_active && (now-new Date(u.last_active).getTime())<30*day).length;
+    const stickiness=mau?Math.round(dau/mau*100):0;
+    const newToday=users.filter(u=>u.first_active===today).length;
+    const weekAgo=new Date(now-7*day).toISOString().slice(0,10);
+    const newWeek=users.filter(u=>u.first_active && u.first_active>=weekAgo).length;
+    const premiumCnt=users.filter(u=>u.is_premium).length;
+    const conversionRate=users.length?(premiumCnt/users.length*100).toFixed(1):0;
+
+    const reportedUsers=buildReportedUsers(users, reports);
+    window._reportedUsers=reportedUsers; // 일괄 밴용
+    const byCountry={};
+    users.forEach(u=>{if(u.my_country)byCountry[u.my_country]=(byCountry[u.my_country]||0)+1;});
+    const maxCountry=Math.max(1,...Object.values(byCountry));
+    const sortedCountries=Object.entries(byCountry).sort((a,b)=>b[1]-a[1]);
+
+    // 연령대별 분포
+    const ageLabels={'40s':'40대','50s':'50대','60s+':'60대+'};
+    const byAge={};
+    users.forEach(u=>{ if(u.age_group) byAge[u.age_group]=(byAge[u.age_group]||0)+1; });
+    const maxAge=Math.max(1,...Object.values(byAge));
+    const ageOrder=['40s','50s','60s+'];
+
+    // 나라별 구독률
+    const subByCountry={};
+    users.forEach(u=>{
+      if(!u.my_country)return;
+      if(!subByCountry[u.my_country]) subByCountry[u.my_country]={total:0,sub:0};
+      subByCountry[u.my_country].total++;
+      if(u.is_premium) subByCountry[u.my_country].sub++;
+    });
+    const subCountryRows=Object.entries(subByCountry)
+      .filter(([,v])=>v.total>0)
+      .sort((a,b)=>b[1].sub-a[1].sub || b[1].total-a[1].total);
+
+    // 연령별 구독률
+    const subByAge={};
+    ageOrder.forEach(a=>subByAge[a]={total:0,sub:0});
+    users.forEach(u=>{
+      if(!u.age_group||!subByAge[u.age_group])return;
+      subByAge[u.age_group].total++;
+      if(u.is_premium) subByAge[u.age_group].sub++;
+    });
+
+    const healthClass = connPct>=85?'danger':connPct>=60?'warn':'';
+
+    document.getElementById('content').innerHTML=`
+      <div class="section-label">🖥️ 서버 상태 (실시간)</div>
+      <div class="grid">
+        <div class="health ${healthClass}">
+          <div class="health-top">
+            <div class="health-label"><span class="live-dot"></span>현재 동시 접속</div>
+            <div class="health-pct" style="color:${gaugeColor(connPct)}">${connPct}%</div>
+          </div>
+          <div class="health-val">${liveConcurrent}<small> / 안전 ${SAFE_CONCURRENT}명</small></div>
+          <div class="gauge"><div class="gauge-fill" style="width:${connPct}%;background:${gaugeColor(connPct)}"></div></div>
+          <div class="health-note">${connPct>=85?'⚠️ Pro 전환 필요! 곧 한계':connPct>=60?'주의: 사용량 증가 중':'여유 있음'}</div>
+        </div>
+        <div class="health">
+          <div class="health-top">
+            <div class="health-label"><span class="live-dot"></span>통화 중</div>
+          </div>
+          <div class="health-val">${activeCalls}<small> 쌍</small></div>
+          <div class="gauge"><div class="gauge-fill" style="width:${Math.min(activeCalls/65*100,100)}%;background:var(--blue)"></div></div>
+          <div class="health-note">동시 영상통화 (${activeCalls*2}명 통화 중)</div>
+        </div>
+        <div class="health">
+          <div class="health-top">
+            <div class="health-label">매칭 대기열</div>
+          </div>
+          <div class="health-val">${waiting}<small> 명 대기</small></div>
+          <div class="gauge"><div class="gauge-fill" style="width:${matchHealth}%;background:var(--green)"></div></div>
+          <div class="health-note">${ghosts>0?`⚠️ 유령 대기 ${ghosts}명 (정리 필요)`:'대기열 정상'}</div>
+        </div>
+        <div class="health">
+          <div class="health-top">
+            <div class="health-label">추정 연결 수</div>
+            <div class="health-pct" style="color:${gaugeColor(connPct)}">${estConnections}/${FREE_CONN_LIMIT}</div>
+          </div>
+          <div class="health-val">${estConnections}<small> 연결</small></div>
+          <div class="gauge"><div class="gauge-fill" style="width:${connPct}%;background:${gaugeColor(connPct)}"></div></div>
+          <div class="health-note">Supabase 무료 한도 ${FREE_CONN_LIMIT}</div>
+        </div>
+      </div>
+
+      <div class="section-label">📊 비즈니스 지표</div>
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">총 가입자</div>
+          <div class="stat-val">${users.length}<span class="stat-unit">명</span></div>
+          <div class="stat-sub">신규(오늘) +${newToday} · 주간 +${newWeek}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label"><span class="live-dot"></span>DAU</div>
+          <div class="stat-val">${dau}<span class="stat-unit">명</span></div>
+          <div class="stat-sub">WAU ${wau} · MAU ${mau}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Stickiness</div>
+          <div class="stat-val">${stickiness}<span class="stat-unit">%</span></div>
+          <div class="stat-sub">DAU/MAU (40%+ 우수)</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">오늘 통화</div>
+          <div class="stat-val">${todayCalls.length}<span class="stat-unit">건</span></div>
+          <div class="stat-sub">누적 ${calls.length}건</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">평균 통화시간</div>
+          <div class="stat-val">${Math.floor(avgDuration/60)}<span class="stat-unit">분</span> ${avgDuration%60}<span class="stat-unit">초</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">평균 별점</div>
+          <div class="stat-val">${avgRating}<span class="stat-unit">/ 5</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">신고 건수</div>
+          <div class="stat-val">${reports.length}<span class="stat-unit">건</span></div>
+          <div class="stat-sub">누적 신고</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">활성 비율</div>
+          <div class="stat-val">${users.length?Math.round(dau/users.length*100):0}<span class="stat-unit">%</span></div>
+          <div class="stat-sub">가입자 중 오늘 활동</div>
+        </div>
+      </div>
+
+      <div class="section-label">👥 가입자 분포</div>
+      <div class="row2">
+        <div class="panel">
+          <div class="panel-title">국가별 가입자 <span class="cnt">${sortedCountries.length}개국</span></div>
+          ${sortedCountries.length?sortedCountries.slice(0,12).map(([c,cnt])=>`
+            <div class="country-row">
+              <span class="country-flag">${flags[c]||'🌍'}</span>
+              <span class="country-name">${names[c]||c}</span>
+              <div class="country-bar-wrap"><div class="country-bar" style="width:${cnt/maxCountry*100}%"></div></div>
+              <span class="country-cnt">${cnt}</span>
+            </div>
+          `).join(''):'<div class="empty">아직 가입자가 없어요</div>'}
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">연령대별 가입자 <span class="cnt">40+ 전용</span></div>
+          ${Object.keys(byAge).length?ageOrder.filter(a=>byAge[a]).map(a=>`
+            <div class="country-row">
+              <span class="country-name" style="width:60px;font-weight:600;color:var(--ink);">${ageLabels[a]}</span>
+              <div class="country-bar-wrap"><div class="country-bar" style="width:${byAge[a]/maxAge*100}%;background:linear-gradient(90deg,var(--purple),#c97cf0);"></div></div>
+              <span class="country-cnt">${byAge[a]}</span>
+              <span style="font-size:12px;color:var(--ink3);width:42px;text-align:right;">${users.length?Math.round(byAge[a]/users.length*100):0}%</span>
+            </div>
+          `).join(''):'<div class="empty">아직 데이터가 없어요</div>'}
+        </div>
+      </div>
+
+      <div class="section-label">💎 구독 현황 (인증 멤버)</div>
+      <div class="grid">
+        <div class="stat" style="grid-column:span 2;border:1px solid rgba(91,141,239,.3);">
+          <div class="stat-label">전체 구독률</div>
+          <div class="stat-val" style="color:var(--blue);">${conversionRate}<span class="stat-unit">%</span></div>
+          <div class="stat-sub">전체 ${users.length}명 중 인증 멤버 ${premiumCnt}명</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">인증 멤버</div>
+          <div class="stat-val">${premiumCnt}<span class="stat-unit">명</span></div>
+          <div class="stat-sub">유료 구독자</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">예상 월 매출</div>
+          <div class="stat-val">${(premiumCnt*9900).toLocaleString()}<span class="stat-unit">원</span></div>
+          <div class="stat-sub">9,900원 × ${premiumCnt}</div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="panel">
+          <div class="panel-title">나라별 구독률 <span class="cnt">구독자 수 순</span></div>
+          ${subCountryRows.length?subCountryRows.slice(0,12).map(([c,v])=>{
+            const rate=v.total?Math.round(v.sub/v.total*100):0;
+            return `<div class="country-row">
+              <span class="country-flag">${flags[c]||'🌍'}</span>
+              <span class="country-name">${names[c]||c}</span>
+              <div class="country-bar-wrap"><div class="country-bar" style="width:${rate}%;background:linear-gradient(90deg,var(--blue),#7ba8f5);"></div></div>
+              <span class="country-cnt">${rate}%</span>
+              <span style="font-size:12px;color:var(--ink3);width:54px;text-align:right;">${v.sub}/${v.total}</span>
+            </div>`;
+          }).join(''):'<div class="empty">아직 데이터가 없어요</div>'}
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">연령별 구독률 <span class="cnt">어느 세대가 더 결제?</span></div>
+          ${ageOrder.some(a=>subByAge[a].total)?ageOrder.filter(a=>subByAge[a].total).map(a=>{
+            const v=subByAge[a];
+            const rate=v.total?Math.round(v.sub/v.total*100):0;
+            return `<div class="country-row">
+              <span class="country-name" style="width:60px;font-weight:600;color:var(--ink);">${ageLabels[a]}</span>
+              <div class="country-bar-wrap"><div class="country-bar" style="width:${rate}%;background:linear-gradient(90deg,var(--blue),#7ba8f5);"></div></div>
+              <span class="country-cnt">${rate}%</span>
+              <span style="font-size:12px;color:var(--ink3);width:54px;text-align:right;">${v.sub}/${v.total}</span>
+            </div>`;
+          }).join(''):'<div class="empty">아직 데이터가 없어요</div>'}
+        </div>
+      </div>
+
+      <div class="section-label">📡 실시간 활동 · 운영</div>
+      <div class="row2">
+        <div class="panel">
+          <div class="panel-title"><span><span class="live-dot"></span>실시간 활동</span> <span class="cnt">대기 ${waiting} · 통화 ${activeCalls}</span></div>
+          <div class="live-list">
+            ${pool.length?pool.slice(0,5).map(p=>{
+              const ghost=p.created_at && (now-new Date(p.created_at).getTime())>2*60*1000;
+              return `<div class="live-item">
+                <span class="live-flag">${flags[p.my_country]||'🌍'}</span>
+                <span class="live-info">${names[p.my_country]||p.my_country||'?'} <span class="live-arrow">→</span> ${p.target_country==='ANY'?'🌍 전세계':(names[p.target_country]||p.target_country||'?')}</span>
+                <span class="live-wait" style="${ghost?'color:#ef4444;background:rgba(239,68,68,.12);':''}">${ghost?'유령':'대기'}</span>
+              </div>`;
+            }).join(''):'<div class="empty">대기 중인 사용자가 없어요</div>'}
+            ${activeCalls>0?`<div class="live-item"><span class="live-flag">🎥</span><span class="live-info">${activeCalls}쌍이 통화 중</span><span class="live-call">LIVE</span></div>`:''}
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><span style="color:#ef4444;">⚠ 신고 관리</span> ${reportedUsers.filter(r=>r.count>=5&&!r.banned).length?`<button onclick="banAllHeavy()" style="padding:5px 12px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:8px;color:#ef4444;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">신고 5회+ 일괄 밴 (${reportedUsers.filter(r=>r.count>=5&&!r.banned).length})</button>`:'<span class="cnt">신고 3회+ 자동표시</span>'}</div>
+          <div class="live-list">
+            ${reportedUsers.length?reportedUsers.map(r=>`
+              <div class="live-item" style="${r.count>=3?'border:1px solid rgba(239,68,68,.4);':''}">
+                <span class="live-flag">${r.banned?'🚫':(r.count>=3?'🔴':'🟡')}</span>
+                <span class="live-info">${r.nickname||'사용자'} <span style="color:#ef4444;font-weight:600;">신고 ${r.count}회</span>${r.banned?' <span style="color:#888;">(밴됨)</span>':''}</span>
+                ${r.banned?
+                  `<button onclick="unbanUser('${r.id}')" style="padding:6px 12px;background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--ink2);font-family:inherit;font-size:12px;cursor:pointer;">해제</button>`:
+                  `<button onclick="banUser('${r.id}')" style="padding:6px 12px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:8px;color:#ef4444;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">밴</button>`
+                }
+              </div>
+            `).join(''):'<div class="empty">신고된 사용자가 없어요</div>'}
+          </div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="panel" style="grid-column:span 2;">
+          <div class="panel-title"><span>사용자 관리</span> <span class="cnt">${users.length}명</span></div>
+          <input id="userSearch" placeholder="닉네임 검색..." oninput="filterUsers(this.value)" style="width:100%;padding:12px 14px;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:14px;outline:none;margin-bottom:12px;">
+          <div class="live-list" id="userList">
+            ${users.slice(0,15).map(u=>`
+              <div class="live-item user-item" data-nick="${(u.nickname||'').toLowerCase()}">
+                <span class="live-flag">${flags[u.my_country]||'🌍'}</span>
+                <span class="live-info">${u.nickname||'무명'} ${u.age_group?`<span style="color:var(--ink3);font-size:11px;">${({'40s':'40대','50s':'50대','60s+':'60대+'})[u.age_group]||''}</span>`:''} ${u.is_premium?'<span style="color:#FF6B4A;font-size:11px;">PRO</span>':''}${u.banned?' <span style="color:#ef4444;font-size:11px;">밴</span>':''}</span>
+                <button onclick="togglePremium('${u.user_id}',${!u.is_premium})" style="padding:6px 10px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink2);font-family:inherit;font-size:11px;cursor:pointer;">${u.is_premium?'PRO해제':'PRO부여'}</button>
+                <button onclick="deleteUser('${u.user_id}')" style="padding:6px 10px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:8px;color:#ef4444;font-family:inherit;font-size:11px;cursor:pointer;">삭제</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('lastUpdate').textContent=`마지막 업데이트 ${new Date().toLocaleTimeString('ko-KR')}`;
+  }catch(e){
+    document.getElementById('content').innerHTML=`<div class="empty">데이터 로드 실패: ${e.message}</div>`;
+  }
+}
+
+function buildReportedUsers(users, reports){
+  const cnt={};
+  reports.forEach(r=>{ if(r.reported_id) cnt[r.reported_id]=(cnt[r.reported_id]||0)+1; });
+  return Object.entries(cnt)
+    .map(([uid,count])=>{
+      const u=users.find(x=>x.user_id===uid);
+      return {id:uid, nickname:u?.nickname, count, banned:u?.banned||false};
+    })
+    .sort((a,b)=>b.count-a.count);
+}
+
+async function banUser(uid){ if(!confirm('이 사용자를 밴하시겠어요?'))return; await db.from('users').update({banned:true}).eq('user_id',uid); loadAll(); }
+async function banAllHeavy(){
+  const targets=(window._reportedUsers||[]).filter(r=>r.count>=5&&!r.banned);
+  if(!targets.length)return;
+  if(!confirm(`신고 5회 이상인 ${targets.length}명을 한 번에 밴할까요?`))return;
+  for(const t of targets){
+    await db.from('users').update({banned:true}).eq('user_id',t.id);
+  }
+  loadAll();
+}
+async function unbanUser(uid){ await db.from('users').update({banned:false}).eq('user_id',uid); loadAll(); }
+async function togglePremium(uid,val){ await db.from('users').update({is_premium:val}).eq('user_id',uid); loadAll(); }
+async function deleteUser(uid){ if(!confirm('이 사용자를 완전히 삭제하시겠어요?'))return; await db.from('users').delete().eq('user_id',uid); loadAll(); }
+function filterUsers(q){ q=q.toLowerCase(); document.querySelectorAll('.user-item').forEach(el=>{ el.style.display=el.dataset.nick.includes(q)?'flex':'none'; }); }
+
+// ===== 관리자 잠금 =====
+// 주의: 프론트 비밀번호는 완벽한 보안이 아님. 진짜 보호하려면 Supabase RLS로 막아야 함.
+// (아래 'ADMIN_PW'를 본인만 아는 값으로 꼭 바꾸세요)
+const ADMIN_PW='1019';
+let adminUnlocked=false;
+function tryUnlock(){
+  const v=document.getElementById('pwInput').value;
+  if(v===ADMIN_PW){
+    adminUnlocked=true;
+    sessionStorage.setItem('globut_admin','1');
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('adminWrap').style.display='block';
+    loadAll();
+    setInterval(loadAll,10000);
+  } else {
+    document.getElementById('pwError').textContent='비밀번호가 틀렸어요';
+    document.getElementById('pwInput').value='';
+  }
+}
+// 같은 세션에서 이미 통과했으면 바로 열기
+if(sessionStorage.getItem('globut_admin')==='1'){
+  adminUnlocked=true;
+  document.getElementById('lockScreen').style.display='none';
+  document.getElementById('adminWrap').style.display='block';
+  loadAll();
+  setInterval(loadAll,10000);
+}
+</script>
+</body>
+</html>
