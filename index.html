@@ -1,0 +1,3087 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="글로벗">
+<meta name="theme-color" content="#ffffff">
+<title>글로벗 - 40+ 글로벌 영상 친구</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+@keyframes splashPop{0%{transform:scale(0);opacity:0;}100%{transform:scale(1);opacity:1;}}
+@keyframes splashFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+:root{
+  --bg:#f8f8f8;
+  --white:#ffffff;
+  --ink:#111827;
+  --ink2:#6b7280;
+  --ink3:#9ca3af;
+  --border:#f0f0f0;
+  --blue:#3182f6;
+  --blue-light:#eff6ff;
+  --blue-light2:#dbeafe;
+  --radius:20px;
+  --radius-sm:16px;
+}
+html,body{height:100%;background:var(--white);}
+body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink);max-width:430px;margin:0 auto;overflow:hidden;position:relative;}
+
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;}
+.screen.on{display:flex;}
+
+/* ── SPLASH ── */
+#splash{align-items:center;justify-content:center;background:var(--blue);}
+.sp-logo{font-size:42px;font-weight:800;color:#fff;letter-spacing:-.05em;}
+
+/* ── ONBOARD ── */
+#onboard{background:var(--white);}
+.ob-hero{
+  padding:72px 28px 0;
+  flex:1;
+}
+.ob-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--blue-light);
+  color:var(--blue);
+  font-size:12px;font-weight:600;
+  padding:6px 12px;border-radius:100px;
+  margin-bottom:24px;
+}
+.ob-chip-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);}
+.ob-title{
+  font-size:38px;font-weight:800;
+  line-height:1.2;letter-spacing:-.04em;
+  color:var(--ink);margin-bottom:16px;
+}
+.ob-title span{color:var(--blue);}
+.ob-desc{font-size:19px;color:var(--ink2);line-height:1.7;font-weight:400;}
+.ob-cards{
+  display:flex;flex-direction:column;gap:8px;
+  padding:32px 28px 0;
+}
+.ob-card{
+  display:flex;align-items:center;gap:16px;
+  padding:18px;
+  background:var(--bg);
+  border-radius:var(--radius);
+}
+.ob-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;flex-shrink:0;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.ob-card-text{}
+.ob-card-title{font-size:17px;font-weight:600;margin-bottom:4px;}
+.ob-card-desc{font-size:15px;color:var(--ink2);}
+.ob-bottom{padding:24px 28px 48px;}
+.btn-blue{
+  width:100%;padding:22px;
+  background:var(--blue);color:#fff;
+  border:none;border-radius:var(--radius);
+  font-size:20px;font-weight:700;
+  font-family:inherit;cursor:pointer;
+  letter-spacing:-.02em;
+  transition:all .12s;
+}
+.btn-blue:active{transform:scale(.98);background:#2563eb;}
+.btn-blue:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* ── SETUP ── */
+#setup{background:var(--white);}
+.setup-nav{
+  display:flex;align-items:center;
+  padding:56px 20px 0;
+  margin-bottom:8px;
+}
+.back-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;margin-right:8px;flex-shrink:0;
+}
+.back-btn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.setup-title-wrap{padding:0 20px;margin-bottom:32px;}
+.setup-title{font-size:32px;font-weight:800;letter-spacing:-.04em;line-height:1.2;margin-bottom:8px;}
+.setup-sub{font-size:17px;color:var(--ink2);}
+
+.seg-label{
+  font-size:15px;font-weight:600;color:var(--ink3);
+  letter-spacing:.02em;padding:0 20px;margin-bottom:10px;
+}
+.pick-rows{display:flex;flex-direction:column;padding:0 20px;gap:2px;margin-bottom:24px;}
+.pick-row{
+  display:flex;align-items:center;gap:16px;
+  padding:18px 18px;border-radius:var(--radius-sm);
+  cursor:pointer;transition:background .1s;
+}
+.pick-row:active{background:var(--bg);}
+.pick-row.sel{background:var(--blue-light);}
+.pick-flag{font-size:30px;width:38px;text-align:center;flex-shrink:0;}
+.pick-texts{flex:1;}
+.pick-name{font-size:19px;font-weight:600;color:var(--ink);}
+.pick-native{font-size:14px;color:var(--ink3);margin-top:2px;}
+.pick-radio{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid var(--border);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:all .12s;background:var(--white);
+}
+.pick-row.sel .pick-radio{border-color:var(--blue);background:var(--blue);}
+.pick-row.sel .pick-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff;}
+.pick-row.sel .pick-name{color:var(--blue);}
+.setup-bottom{
+  position:sticky;bottom:0;
+  padding:12px 20px 40px;
+  background:linear-gradient(transparent,var(--white) 30%);
+}
+
+/* ── MATCHING ── */
+#matching{background:var(--white);align-items:center;justify-content:center;padding:0 28px;}
+.match-anim{
+  width:88px;height:88px;margin-bottom:40px;position:relative;
+}
+.match-ring{
+  position:absolute;inset:0;border-radius:50%;
+  border:1.5px solid var(--blue);
+  opacity:0;animation:ringOut 2s ease-out infinite;
+}
+.match-ring:nth-child(2){animation-delay:.66s;}
+.match-ring:nth-child(3){animation-delay:1.32s;}
+@keyframes ringOut{0%{transform:scale(.5);opacity:.5;}100%{transform:scale(1.8);opacity:0;}}
+.match-center{
+  position:absolute;inset:20px;border-radius:50%;
+  background:var(--blue-light);
+  display:flex;align-items:center;justify-content:center;
+}
+.match-icon{font-size:22px;}
+.match-h{font-size:28px;font-weight:800;letter-spacing:-.04em;margin-bottom:10px;text-align:center;}
+.match-p{font-size:17px;color:var(--ink2);line-height:1.6;text-align:center;margin-bottom:40px;}
+.match-tag{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;
+  background:var(--bg);border-radius:var(--radius);
+  margin-bottom:28px;width:100%;
+}
+.match-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;animation:blink 1.2s ease infinite;}
+@keyframes blink{0%,100%{opacity:.2;}50%{opacity:1;}}
+.match-tag-txt{font-size:16px;color:var(--ink2);font-weight:500;}
+.demand-card{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;
+  background:var(--bg);
+  border-radius:var(--radius-sm);
+  animation:slideIn .3s ease both;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.demand-flag{font-size:28px;flex-shrink:0;}
+.demand-text{flex:1;font-size:16px;color:var(--ink2);line-height:1.5;}
+.demand-text b{color:var(--ink);font-weight:600;}
+.demand-count{
+  font-size:12px;font-weight:700;color:var(--blue);
+  background:var(--blue-light);
+  padding:4px 10px;border-radius:100px;flex-shrink:0;
+}
+
+/* ── CALL ── */
+#call{}
+.call-wrap{height:100dvh;position:relative;background:#000;overflow:hidden;}
+#remoteVideo{width:100%;height:100%;object-fit:cover;}
+.call-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.5) 0%,transparent 20%,transparent 65%,rgba(0,0,0,.85) 100%);
+  pointer-events:none;
+}
+.call-top{
+  position:absolute;top:0;left:0;right:0;
+  padding:54px 20px 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.call-peer{display:flex;align-items:center;gap:10px;}
+.call-peer-flag{font-size:28px;}
+.call-peer-info{}
+.call-peer-name{font-size:15px;font-weight:700;color:#fff;}
+.call-peer-lang{font-size:12px;color:rgba(255,255,255,.5);margin-top:1px;}
+.live-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.15);
+  padding:6px 12px;border-radius:100px;
+}
+.live-dot-r{width:5px;height:5px;border-radius:50%;background:#ef4444;animation:blink 1.2s ease infinite;}
+.live-pill-txt{font-size:12px;font-weight:600;color:#fff;}
+.call-timer{font-size:13px;color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums;}
+#localVideo{
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  border-radius:0;border:none;
+  cursor:default;touch-action:none;
+  transition:all .5s cubic-bezier(.4,0,.2,1);
+  z-index:4;
+  transform:scaleX(-1);
+}
+#localVideo.pip{
+  top:110px;left:auto;right:16px;
+  width:90px;height:130px;
+  border-radius:18px;
+  border:2px solid rgba(255,255,255,.2);
+  cursor:grab;
+  transform:scaleX(-1);
+}
+#localVideo.pip:active{cursor:grabbing;}
+@keyframes blink2{0%,100%{opacity:.2;}50%{opacity:1;}}
+.call-controls{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:0 16px 52px;
+  display:flex;justify-content:center;align-items:center;gap:14px;
+}
+.ctrl-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.ctrl-btn{
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;transition:transform .12s;
+}
+.ctrl-btn:active{transform:scale(.9);}
+.ctrl-btn.sm{
+  width:52px;height:52px;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.2);
+}
+.ctrl-btn.sm.off{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.3);}
+.ctrl-btn.lg{
+  width:64px;height:64px;
+  background:#ef4444;
+}
+.ctrl-btn svg{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.ctrl-btn.sm svg{width:20px;height:20px;}
+.ctrl-btn.lg svg{width:24px;height:24px;}
+.ctrl-label{font-size:11px;color:rgba(255,255,255,.45);font-weight:500;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="screen on" id="splash" style="background:linear-gradient(160deg,#FF8E72 0%,#FF6B4A 100%);">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div style="font-size:60px;font-weight:800;letter-spacing:-.04em;color:#fff;animation:splashPop .6s cubic-bezier(.2,.8,.2,1.2);text-shadow:0 4px 24px rgba(0,0,0,.15);">Globut</div>
+    <div style="font-size:15px;color:rgba(255,255,255,.9);animation:splashFade .6s .3s both;" data-i18n="splash_sub">전 세계 또래와 친구가 되는 곳</div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="screen" id="login" style="background:#1a1a1a;">
+  <img src="onboard.jpg?v=3" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+  <video id="loginVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="onboard.jpg?v=3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+    <source src="onboard.mp4?v=3" type="video/mp4">
+  </video>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,transparent 30%,rgba(0,0,0,.8) 100%);z-index:1;"></div>
+
+  <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 28px 48px;">
+    <div style="margin-bottom:40px;">
+      <div style="font-size:46px;font-weight:800;color:#fff;letter-spacing:-.04em;margin-bottom:4px;text-shadow:0 4px 20px rgba(0,0,0,.4);">Globut</div>
+      <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:18px;letter-spacing:.02em;text-shadow:0 2px 10px rgba(0,0,0,.5);">글로벗 · 40+ 글로벌 영상 친구</div>
+      <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1.3;margin-bottom:12px;text-shadow:0 2px 12px rgba(0,0,0,.5);" data-i18n="login_title">이 나이에,<br>외국 친구라니</div>
+      <div style="font-size:15px;color:rgba(255,255,255,.9);line-height:1.7;text-shadow:0 2px 10px rgba(0,0,0,.5);" data-i18n="login_sub">같은 시절을 지나온 또래와<br>얼굴 보며 만나요</div>
+    </div>
+    <button onclick="loginWithGoogle()" style="width:100%;padding:17px;background:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:16px;font-weight:700;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      <span data-i18n="login_google">Google로 시작하기</span>
+    </button>
+    <div style="text-align:center;margin-top:18px;font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;" data-i18n="login_consent">40세 이상만 함께할 수 있어요<br>시작하면 <a href="terms.html" target="_blank" style="color:rgba(255,255,255,.85);">이용약관</a> · <a href="privacy.html" target="_blank" style="color:rgba(255,255,255,.85);">개인정보처리방침</a>에 동의하게 돼요</div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="profile">
+  <div style="padding:56px 24px 0;margin-bottom:32px;display:flex;align-items:flex-start;gap:12px;">
+    <button id="profileBackBtn" class="back-btn" onclick="show('setup')" style="display:none;margin-top:2px;">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div>
+      <div id="profileTitle" style="font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:6px;" data-i18n="profile_title">먼저 나를 소개해 주세요</div>
+      <div id="profileSubtitle" style="font-size:14px;color:var(--ink2);" data-i18n="profile_sub">친구들에게 보여질 모습이에요</div>
+    </div>
+  </div>
+
+  <div style="padding:0 24px;display:flex;flex-direction:column;gap:20px;flex:1;">
+
+    <!-- 프로필 사진 -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div id="avatarWrap" onclick="document.getElementById('avatarInput').click()" style="width:88px;height:88px;border-radius:50%;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;">
+        <img id="avatarPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+        <div id="avatarPlaceholder" style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ink3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span style="font-size:11px;color:var(--ink3);" data-i18n="photo_add">사진 추가</span>
+        </div>
+      </div>
+      <input id="avatarInput" type="file" accept="image/*" style="display:none;" onchange="previewAvatar(event)">
+      <div style="font-size:12px;color:var(--ink3);" data-i18n="photo_tap">탭해서 사진을 추가하세요</div>
+    </div>
+
+    <div>
+      <div class="seg-label" style="margin-bottom:8px;" data-i18n="nickname">닉네임</div>
+      <input id="nicknameInput" type="text" placeholder="사용할 이름을 입력하세요" maxlength="12"
+        style="width:100%;padding:15px 16px;background:var(--bg);border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:15px;color:var(--ink);outline:none;">
+    </div>
+
+    <div>
+      <div class="seg-label" style="margin-bottom:8px;">내 나라</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;" id="myCountryGrid">
+        <div class="pick-row mc" data-val="KR" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇰🇷</div><div style="font-size:11px;font-weight:600;">한국</div></div>
+        <div class="pick-row mc" data-val="JP" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇯🇵</div><div style="font-size:11px;font-weight:600;">일본</div></div>
+        <div class="pick-row mc" data-val="US" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇺🇸</div><div style="font-size:11px;font-weight:600;">미국</div></div>
+        <div class="pick-row mc" data-val="VN" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇻🇳</div><div style="font-size:11px;font-weight:600;">베트남</div></div>
+        <div class="pick-row mc" data-val="ID" style="flex-direction:column;padding:10px 4px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:22px;">🇮🇩</div><div style="font-size:11px;font-weight:600;">인니</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="seg-label" style="margin-bottom:8px;"><span data-i18n="age">나이대</span> <span style="color:var(--blue);font-weight:600;">· <span data-i18n="age_peer">또래끼리 만나요</span></span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="ageGrid">
+        <div class="pick-row" data-val="40s" style="flex-direction:column;padding:14px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:16px;font-weight:700;" data-i18n="age_40">40대</div></div>
+        <div class="pick-row" data-val="50s" style="flex-direction:column;padding:14px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:16px;font-weight:700;" data-i18n="age_50">50대</div></div>
+        <div class="pick-row" data-val="60s+" style="flex-direction:column;padding:14px 8px;text-align:center;gap:2px;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:16px;font-weight:700;" data-i18n="age_60">60대+</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="seg-label" style="margin-bottom:8px;" data-i18n="gender">성별 (선택)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;" id="genderGrid">
+        <div class="pick-row" data-val="male" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;" data-i18n="male">남성</div></div>
+        <div class="pick-row" data-val="female" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;" data-i18n="female">여성</div></div>
+        <div class="pick-row" data-val="none" style="flex-direction:column;padding:12px 8px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);"><div style="font-size:15px;font-weight:700;" data-i18n="private">비공개</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="setup-bottom">
+    <button class="btn-blue" id="profileSaveBtn" onclick="saveProfile()" data-i18n="btn_start">친구 만나러 가기</button>
+  </div>
+</div>
+<div class="screen" id="onboard" style="background:#1a1a1a;">
+  <img src="onboard.jpg?v=3" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+  <video id="onboardVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="onboard.jpg?v=3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+    <source src="onboard.mp4?v=3" type="video/mp4">
+  </video>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,transparent 35%,rgba(0,0,0,.6) 100%);z-index:1;"></div>
+
+  <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 32px 56px;">
+    <div style="font-size:60px;font-weight:800;letter-spacing:-.04em;color:#fff;line-height:1;margin-bottom:6px;text-shadow:0 4px 24px rgba(0,0,0,.5);">Globut</div>
+    <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:24px;letter-spacing:.02em;text-shadow:0 2px 10px rgba(0,0,0,.5);">글로벗 · 40+ 글로벌 영상 친구</div>
+    <div style="font-size:19px;font-weight:500;color:rgba(255,255,255,.92);line-height:1.6;margin-bottom:40px;text-shadow:0 2px 12px rgba(0,0,0,.6);" data-i18n="onboard_sub">얼굴 보며 웃다 보면<br>친구가 돼요</div>
+    <button class="btn-blue" onclick="show('setup')" style="background:#fff;color:#FF6B4A;" data-i18n="btn_start">친구 만나러 가기</button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div class="screen" id="setup">
+  <div class="setup-nav" style="justify-content:space-between;">
+    <button class="back-btn" onclick="show('onboard')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div style="display:flex;gap:8px;">
+      <button class="back-btn" onclick="openFriends()" title="내 친구">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </button>
+      <button class="back-btn" onclick="openProfileEdit()" title="내 프로필">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="setup-title-wrap">
+    <div class="setup-title" data-i18n="setup_title">전 세계 친구를<br>만나보세요</div>
+    <div class="setup-sub" data-i18n="setup_sub">버튼을 누르면 바로 연결돼요</div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;">
+    <div style="font-size:80px;margin-bottom:8px;">🌍</div>
+  </div>
+
+  <div class="setup-bottom" style="display:flex;flex-direction:column;gap:12px;">
+    <button class="btn-blue" id="connectBtn" data-i18n="btn_start">친구 만나러 가기</button>
+    <button id="pickCountryBtn" style="width:100%;padding:14px;background:var(--bg);color:var(--ink2);border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span data-i18n="pick_country">나라 골라 만나기</span>
+    </button>
+  </div>
+</div>
+
+<!-- COUNTRY PICK (인증 멤버 전용) -->
+<div class="screen" id="countryPick">
+  <div class="top-bar">
+    <button class="back-btn" onclick="show('setup')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+  </div>
+  <div style="padding:0 24px 12px;">
+    <div style="font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:4px;" data-i18n="country_q">어느 나라 친구?</div>
+    <input id="countrySearch" data-i18n-ph="country_search" placeholder="나라 검색" style="width:100%;margin-top:12px;padding:13px 16px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:15px;outline:none;box-sizing:border-box;">
+  </div>
+  <div id="countryPickList" style="flex:1;overflow-y:auto;padding:0 24px 24px;"></div>
+</div>
+
+<!-- FRIENDS -->
+<div class="screen" id="friends">
+  <div class="setup-nav">
+    <button class="back-btn" onclick="show('setup')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+  <div style="padding:8px 24px 0;margin-bottom:24px;">
+    <div style="font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:6px;" data-i18n="my_friends">내 친구</div>
+    <div style="font-size:14px;color:var(--ink2);" data-i18n="friends_sub">접속 중인 친구에게 영상으로 인사해보세요</div>
+  </div>
+  <div id="friendsList" style="flex:1;overflow-y:auto;padding:0 24px 24px;"></div>
+</div>
+
+<!-- MATCHING -->
+<div class="screen" id="matching">
+  <div class="match-anim">
+    <div class="match-ring"></div>
+    <div class="match-ring"></div>
+    <div class="match-ring"></div>
+    <div class="match-center"><div class="match-icon">🌍</div></div>
+  </div>
+  <div class="match-h" data-i18n="matching">친구를 찾고 있어요</div>
+  <div class="match-p" data-i18n="matching_sub">잠시만요!</div>
+  <div class="match-tag">
+    <div class="match-tag-dot"></div>
+    <div class="match-tag-txt" id="matchInfo" data-i18n="matching">매칭 중...</div>
+  </div>
+
+  <!-- 인증 멤버 구독 카드 (매칭 대기 중 노출, 닫기 가능) -->
+  <div id="matchPremiumCard" style="width:100%;background:linear-gradient(135deg,#3182f6,#1d4ed8);border-radius:var(--radius);padding:20px;margin-bottom:16px;position:relative;display:none;">
+    <button onclick="dismissMatchPremium()" style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span data-i18n="member_title">Globut 인증 멤버</span> <svg style="width:17px;height:17px;" viewBox="0 0 24 24"><path fill="#fff" d="M12 1l2.4 2.1 3.2-.3 1.3 2.9 2.9 1.3-.3 3.2L23.6 12l-2.1 2.4.3 3.2-2.9 1.3-1.3 2.9-3.2-.3L12 23.6l-2.4-2.1-3.2.3-1.3-2.9-2.9-1.3.3-3.2L.4 12l2.1-2.4-.3-3.2 2.9-1.3 1.3-2.9 3.2.3z"/><path fill="#3182f6" d="M10.5 14.4l-2.1-2.1-1.4 1.4 3.5 3.5 6-6-1.4-1.4z"/></svg></div>
+    <div style="font-size:13px;color:rgba(255,255,255,.92);margin-bottom:16px;line-height:1.7;" data-i18n="member_desc">검증된 멤버끼리 먼저 연결돼요.</div>
+    <button onclick="goPremium()" style="width:100%;padding:14px;background:#fff;color:var(--blue);border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;" data-i18n="member_cta">월 9,900원 · 인증 멤버 되기</button>
+  </div>
+
+  <div id="demandCards" style="width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+
+  <button id="cancelBtn" style="font-size:14px;font-weight:600;color:var(--ink2);background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;cursor:pointer;padding:14px 48px;" data-i18n="cancel">취소</button>
+</div>
+
+<!-- CALL -->
+<div class="screen" id="call">
+  <div class="call-wrap">
+    <!-- 상대방 영상 (처음엔 숨김) -->
+    <video id="remoteVideo" autoplay playsinline style="opacity:0;transition:opacity .6s;"></video>
+    <div class="call-overlay"></div>
+
+    <!-- 연결 대기 중 표시 -->
+    <div id="waitingOverlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:5;pointer-events:none;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.6);animation:blink2 1.2s ease infinite;"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.6);animation:blink2 1.2s .2s ease infinite;"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.6);animation:blink2 1.2s .4s ease infinite;"></div>
+      </div>
+      <div style="font-size:14px;color:rgba(255,255,255,.7);font-weight:500;" data-i18n="connecting">친구와 연결하고 있어요...</div>
+    </div>
+
+    <div class="call-top">
+      <div class="call-peer">
+        <div style="position:relative;width:36px;height:36px;flex-shrink:0;">
+          <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.15);">
+            <img id="callAvatar" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+            <div id="callAvatarFallback" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:18px;">🌍</div>
+          </div>
+          <div id="peerFlagBadge" style="position:absolute;bottom:-2px;right:-2px;font-size:14px;line-height:1;background:rgba(0,0,0,.5);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;">🌍</div>
+        </div>
+        <div class="call-peer-info">
+          <div class="call-peer-name" id="peerName" style="display:flex;align-items:center;gap:4px;"><span id="peerNameText" data-i18n="connected">연결됨</span><svg id="peerVerify" style="display:none;width:15px;height:15px;flex-shrink:0;" viewBox="0 0 24 24"><path fill="#3182f6" d="M12 1l2.4 2.1 3.2-.3 1.3 2.9 2.9 1.3-.3 3.2L23.6 12l-2.1 2.4.3 3.2-2.9 1.3-1.3 2.9-3.2-.3L12 23.6l-2.4-2.1-3.2.3-1.3-2.9-2.9-1.3.3-3.2L.4 12l2.1-2.4-.3-3.2 2.9-1.3 1.3-2.9 3.2.3z"/><path fill="#fff" d="M10.5 14.4l-2.1-2.1-1.4 1.4 3.5 3.5 6-6-1.4-1.4z"/></svg></div>
+          <div class="call-peer-lang" id="peerLang"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="addFriendBtn" onclick="addCurrentFriend()" style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.3);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="친구 추가">
+          <svg id="addFriendIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <button onclick="reportUser()" style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.3);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="신고">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        </button>
+        <div class="live-pill"><div class="live-dot-r"></div><div class="live-pill-txt">LIVE</div></div>
+        <div class="call-timer" id="timer">00:00</div>
+      </div>
+    </div>
+
+    <!-- 내 영상 (처음엔 전체화면, 연결되면 작은 박스로) -->
+    <video id="localVideo" autoplay playsinline muted></video>
+
+    <!-- 자막 영역 -->
+    <div id="mySubtitle" style="position:absolute;bottom:160px;left:12px;right:12px;text-align:center;pointer-events:none;z-index:10;display:none;">
+      <div style="display:inline-block;background:rgba(0,0,0,.78);color:#fff;font-size:19px;font-weight:600;padding:12px 20px;border-radius:14px;line-height:1.5;max-width:100%;" id="mySubtitleText"></div>
+    </div>
+    <div id="peerSubtitle" style="position:absolute;bottom:150px;left:12px;right:12px;text-align:center;pointer-events:none;z-index:10;display:none;">
+      <div style="display:inline-block;background:rgba(0,0,0,.82);color:#fff;font-size:23px;font-weight:700;padding:14px 24px;border-radius:16px;line-height:1.5;max-width:100%;" id="peerSubtitleText"></div>
+    </div>
+
+    <div class="call-controls">
+      <div class="ctrl-wrap">
+        <button class="ctrl-btn sm" id="muteBtn" onclick="toggleMute()">
+          <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <span class="ctrl-label" data-i18n="mic">마이크</span>
+      </div>
+      <div class="ctrl-wrap">
+        <button class="ctrl-btn lg" onclick="confirmEndCall()">
+          <svg viewBox="0 0 24 24"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.42 19.42 0 0 1 4.36 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>
+        </button>
+        <span class="ctrl-label" data-i18n="leave">종료</span>
+      </div>
+      <div class="ctrl-wrap">
+        <button class="ctrl-btn sm" id="camBtn" onclick="toggleCam()">
+          <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        </button>
+        <span class="ctrl-label" data-i18n="cam">카메라</span>
+      </div>
+      <div class="ctrl-wrap">
+        <button class="ctrl-btn sm" onclick="switchCam()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/><path d="M8 4h.01"/></svg>
+        </button>
+        <span class="ctrl-label" data-i18n="swap">전환</span>
+      </div>
+      <div class="ctrl-wrap">
+        <button class="ctrl-btn sm" id="subBtn" onclick="toggleSubtitle()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="6" y1="11" x2="10" y2="11"/><line x1="14" y1="11" x2="18" y2="11"/><line x1="6" y1="15" x2="14" y2="15"/></svg>
+        </button>
+        <span class="ctrl-label" data-i18n="sub">자막</span>
+      </div>
+      <div class="ctrl-wrap">
+        <button class="ctrl-btn sm" onclick="nextMatch()" style="background:rgba(255,107,74,.9);border-color:rgba(255,107,74,.5);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        </button>
+        <span class="ctrl-label" data-i18n="next">다음</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== I18N START ===== */
+// ===== Globut 다국어 (i18n) =====
+// 짧은 UI 텍스트만. navigator.language 자동 감지. 없는 언어는 영어(en) 폴백.
+const I18N={
+  ko:{
+    splash_sub:"전 세계 또래와 친구가 되는 곳",
+    login_title:"전 세계 친구를\n영상으로",
+    login_sub:"",
+    login_google:"Google로 시작하기",
+    login_consent:"40세 이상만 함께할 수 있어요<br>시작하면 <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">이용약관</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">개인정보처리방침</a>에 동의하게 돼요",
+    onboard_sub:"얼굴 보며 웃다 보면\n친구가 돼요",
+    btn_start:"친구 만나러 가기",
+    profile_title:"먼저 나를 소개해 주세요",
+    profile_sub:"친구들에게 보여질 모습이에요",
+    profile_my:"내 프로필",
+    profile_my_sub:"언제든 바꿀 수 있어요",
+    photo_add:"사진 추가",
+    photo_tap:"탭해서 사진을 추가하세요",
+    nickname:"닉네임",
+    age:"나이대",
+    age_peer:"또래끼리 만나요",
+    age_40:"40대", age_50:"50대", age_60:"60대+",
+    gender:"성별 (선택)",
+    male:"남성", female:"여성", private:"비공개",
+    setup_title:"전 세계 친구를\n만나보세요",
+    setup_sub:"버튼을 누르면 바로 연결돼요",
+    pick_country:"나라 골라 만나기",
+    country_q:"어느 나라 친구?",
+    country_search:"나라 검색",
+    matching:"친구를 찾고 있어요",
+    matching_sub:"잠시만요!",
+    match_global:"전 세계 친구 찾는 중",
+    connecting:"친구와 연결하고 있어요...",
+    connected:"연결됨",
+    friend:"친구",
+    next:"다음",
+    result_good:"좋은 대화였어요!",
+    result_short:"아쉽게 끊겼네요",
+    rate_q:"방금 만난 친구, 어땠어요?",
+    report:"불편한 일이 있었다면 알려주세요",
+    usage_today:"오늘 사용량",
+    new_friend:"새로운 친구 만나기",
+    home:"홈으로",
+    my_friends:"내 친구",
+    friends_sub:"접속 중인 친구에게 영상으로 인사해보세요",
+    no_friends:"아직 친구가 없어요",
+    add_friend_hint:"영상통화 중 ❤️ 버튼을 눌러\n친구를 추가해보세요",
+    online:"지금 접속 중", offline:"오프라인",
+    call_friend:"영상 걸기",
+    loading:"불러오는 중...",
+    cancel:"취소", confirm:"확인", delete:"삭제", leave:"종료",
+    cam:"카메라", mic:"마이크", sub:"자막", swap:"전환",
+    member_title:"Globut 인증 멤버",
+    member_safe:"안심하고 만날 수 있는 표시예요",
+    member_desc:"검증된 멤버끼리 먼저 연결돼요.\n인증마크로 안심하고 만나세요.",
+    member_cta:"월 9,900원 · 인증 멤버 되기",
+    leave_q:"정말 나가시겠어요?",
+    end_call_q:"통화를 종료할까요?",
+    delete_friend_q:"이 친구를 삭제할까요?",
+    report_q:"이 사용자를 신고할까요?",
+    t_nickname:"닉네임을 입력해주세요",
+    t_age:"나이대를 선택해주세요",
+    t_country:"내 나라를 선택해주세요",
+    t_saved:"프로필이 수정되었어요",
+    t_cam:"카메라와 마이크를 켜야 친구를 만날 수 있어요",
+    t_added:"친구로 추가했어요 ❤️",
+    t_already:"이미 친구로 추가했어요",
+    t_disconnected:"친구와 연결이 끊어졌어요",
+    t_reported:"알려주셔서 고마워요. 이 분과는 다시 연결되지 않아요",
+    t_rated:"소중한 평가 고마워요!",
+    t_next:"다음 친구를 찾고 있어요",
+    t_member_soon:"인증 멤버는 정식 출시 후 이용할 수 있어요",
+    t_calling:"님을 부르고 있어요...",
+    t_no_answer:"님이 응답하지 않아요",
+    t_busy:"님은 지금 다른 통화 중이에요",
+    t_reject:"님이 지금은 받을 수 없어요",
+    banned_title:"이용이 제한된 계정입니다",
+    banned_desc:"신고가 누적되어 이용이 제한되었습니다.",
+    t_login_err:"로그인에 문제가 있어요. 다시 시도해 주세요",
+    t_friend_loading:"친구 정보를 불러오고 있어요",
+    t_friend_fail:"친구 추가에 실패했어요",
+    t_busy_self:"이미 통화 중이에요",
+    report_detail:"부적절한 행동, 노출, 폭언 등이 신고됩니다",
+    call_incoming:"님이 영상 통화를 걸어요. 받을까요?"
+  }
+};
+
+I18N.en={
+  splash_sub:"Where you make friends worldwide",
+  login_title:"Friends worldwide,\nby video",
+  login_sub:"",
+  login_google:"Continue with Google",
+  login_consent:"For ages 40+ only<br>By starting, you agree to our <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Terms</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Privacy</a>",
+  onboard_sub:"Smile together,\nbecome friends",
+  btn_start:"Meet a friend",
+  profile_title:"Tell us about you",
+  profile_sub:"This is how friends will see you",
+  profile_my:"My profile",
+  profile_my_sub:"You can change anytime",
+  photo_add:"Add photo",
+  photo_tap:"Tap to add a photo",
+  nickname:"Nickname",
+  age:"Age group",
+  age_peer:"Meet your peers",
+  age_40:"40s", age_50:"50s", age_60:"60+",
+  gender:"Gender (optional)",
+  male:"Male", female:"Female", private:"Private",
+  setup_title:"Meet friends\naround the world",
+  setup_sub:"Tap the button to connect",
+  pick_country:"Choose a country",
+  country_q:"Which country?",
+  country_search:"Search country",
+  matching:"Finding a friend",
+  matching_sub:"Just a moment!",
+  match_global:"Finding friends worldwide",
+  connecting:"Connecting with a friend...",
+  connected:"Connected",
+  friend:"Friend",
+  next:"Next",
+  result_good:"Nice chat!",
+  result_short:"Ended too soon",
+  rate_q:"How was your new friend?",
+  report:"Let us know if something was wrong",
+  usage_today:"Today's usage",
+  new_friend:"Meet a new friend",
+  home:"Home",
+  my_friends:"My friends",
+  friends_sub:"Say hi to online friends by video",
+  no_friends:"No friends yet",
+  add_friend_hint:"Tap ❤️ during a call\nto add a friend",
+  online:"Online now", offline:"Offline",
+  call_friend:"Video call",
+  loading:"Loading...",
+  cancel:"Cancel", confirm:"OK", delete:"Delete", leave:"End",
+  cam:"Camera", mic:"Mic", sub:"Subtitles", swap:"Flip",
+  member_title:"Globut Verified Member",
+  member_safe:"A sign you can meet with confidence",
+  member_desc:"Verified members connect first.\nMeet safely with the verified mark.",
+  member_cta:"$8/mo · Become a member",
+  leave_q:"Leave now?",
+  end_call_q:"End the call?",
+  delete_friend_q:"Remove this friend?",
+  report_q:"Report this user?",
+  t_nickname:"Please enter a nickname",
+  t_age:"Please select your age group",
+  t_country:"Please select your country",
+  t_saved:"Profile updated",
+  t_cam:"Turn on camera and mic to meet friends",
+  t_added:"Added as a friend ❤️",
+  t_already:"Already your friend",
+  t_disconnected:"Friend disconnected",
+  t_reported:"Thanks for letting us know. You won't be matched again",
+  t_rated:"Thanks for your feedback!",
+  t_next:"Finding the next friend",
+  t_member_soon:"Membership opens after launch",
+  t_calling:" is calling...",
+  t_no_answer:" didn't answer",
+  t_busy:" is on another call",
+  t_reject:" can't answer right now",
+  banned_title:"Account restricted",
+  banned_desc:"Your account is restricted due to reports.",
+    t_login_err:"Login problem. Please try again",
+    t_friend_loading:"Loading friend info",
+    t_friend_fail:"Failed to add friend",
+    t_busy_self:"Already in a call",
+    report_detail:"Inappropriate behavior, nudity, or abuse will be reported",
+    call_incoming:" is calling you. Answer?"
+};
+
+I18N.ja={
+  splash_sub:"世界中の同世代と友達になる場所",
+  login_title:"世界中の友達と\nビデオで",
+  login_sub:"",
+  login_google:"Googleで始める",
+  login_consent:"40歳以上限定です<br>開始すると <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">利用規約</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">プライバシー</a> に同意します",
+  onboard_sub:"笑い合えば\n友達になれる",
+  btn_start:"友達に会いに行く",
+  profile_title:"まず自己紹介を",
+  profile_sub:"友達に見える姿です",
+  profile_my:"マイプロフィール",
+  profile_my_sub:"いつでも変更できます",
+  photo_add:"写真を追加",
+  photo_tap:"タップして写真を追加",
+  nickname:"ニックネーム",
+  age:"年代",
+  age_peer:"同世代と出会う",
+  age_40:"40代", age_50:"50代", age_60:"60代以上",
+  gender:"性別（任意）",
+  male:"男性", female:"女性", private:"非公開",
+  setup_title:"世界中の友達に\n会いましょう",
+  setup_sub:"ボタンを押すとすぐつながります",
+  pick_country:"国を選んで会う",
+  country_q:"どの国の友達？",
+  country_search:"国を検索",
+  matching:"友達を探しています",
+  matching_sub:"少々お待ちを！",
+  match_global:"世界中の友達を探し中",
+  connecting:"友達とつないでいます...",
+  connected:"接続済み",
+  friend:"友達",
+  next:"次へ",
+  result_good:"楽しい会話でした！",
+  result_short:"早く終わっちゃった",
+  rate_q:"今の友達、どうでした？",
+  report:"嫌なことがあれば教えてください",
+  usage_today:"今日の利用",
+  new_friend:"新しい友達に会う",
+  home:"ホーム",
+  my_friends:"友達リスト",
+  friends_sub:"オンラインの友達にビデオで挨拶",
+  no_friends:"まだ友達がいません",
+  add_friend_hint:"通話中に❤️を押して\n友達を追加",
+  online:"オンライン", offline:"オフライン",
+  call_friend:"ビデオ通話",
+  loading:"読み込み中...",
+  cancel:"キャンセル", confirm:"OK", delete:"削除", leave:"終了",
+  cam:"カメラ", mic:"マイク", sub:"字幕", swap:"切替",
+  member_title:"Globut 認証メンバー",
+  member_safe:"安心して会える印です",
+  member_desc:"認証メンバー同士が先につながります。\n認証マークで安心して会えます。",
+  member_cta:"月1,200円・認証メンバーになる",
+  leave_q:"本当に出ますか？",
+  end_call_q:"通話を終了しますか？",
+  delete_friend_q:"この友達を削除しますか？",
+  report_q:"このユーザーを通報しますか？",
+  t_nickname:"ニックネームを入力してください",
+  t_age:"年代を選択してください",
+  t_country:"国を選択してください",
+  t_saved:"プロフィールを更新しました",
+  t_cam:"カメラとマイクをオンにしてください",
+  t_added:"友達に追加しました ❤️",
+  t_already:"すでに友達です",
+  t_disconnected:"友達との接続が切れました",
+  t_reported:"教えてくれてありがとう。この人とは再接続されません",
+  t_rated:"評価ありがとう！",
+  t_next:"次の友達を探しています",
+  t_member_soon:"認証メンバーは正式リリース後に利用できます",
+  t_calling:"さんを呼んでいます...",
+  t_no_answer:"さんが応答しません",
+  t_busy:"さんは別の通話中です",
+  t_reject:"さんは今は出られません",
+  banned_title:"利用制限されたアカウント",
+  banned_desc:"通報が累積し利用が制限されました。",
+    t_login_err:"ログインに問題があります。もう一度お試しください",
+    t_friend_loading:"友達情報を読み込み中",
+    t_friend_fail:"友達追加に失敗しました",
+    t_busy_self:"すでに通話中です",
+    report_detail:"不適切な行為・露出・暴言などが通報されます",
+    call_incoming:"さんがビデオ通話をかけています。出ますか？"
+};
+
+I18N.vi={
+  splash_sub:"Nơi kết bạn toàn thế giới",
+  login_title:"Bạn bè khắp thế giới\nqua video",
+  login_sub:"",
+  login_google:"Tiếp tục với Google",
+  login_consent:"Chỉ dành cho 40+<br>Bắt đầu là đồng ý <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Điều khoản</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Bảo mật</a>",
+  onboard_sub:"Cười cùng nhau,\nthành bạn bè",
+  btn_start:"Gặp bạn mới",
+  profile_title:"Giới thiệu về bạn",
+  profile_sub:"Bạn bè sẽ thấy thế này",
+  profile_my:"Hồ sơ của tôi",
+  profile_my_sub:"Có thể đổi bất cứ lúc nào",
+  photo_add:"Thêm ảnh",
+  photo_tap:"Chạm để thêm ảnh",
+  nickname:"Biệt danh",
+  age:"Độ tuổi",
+  age_peer:"Gặp người cùng tuổi",
+  age_40:"40+", age_50:"50+", age_60:"60+",
+  gender:"Giới tính (tùy chọn)",
+  male:"Nam", female:"Nữ", private:"Riêng tư",
+  setup_title:"Gặp bạn bè\nkhắp thế giới",
+  setup_sub:"Nhấn nút để kết nối ngay",
+  pick_country:"Chọn quốc gia",
+  country_q:"Bạn ở nước nào?",
+  country_search:"Tìm quốc gia",
+  matching:"Đang tìm bạn",
+  matching_sub:"Chờ chút nhé!",
+  match_global:"Đang tìm bạn toàn thế giới",
+  connecting:"Đang kết nối với bạn...",
+  connected:"Đã kết nối",
+  friend:"Bạn bè",
+  next:"Tiếp",
+  result_good:"Cuộc trò chuyện vui!",
+  result_short:"Kết thúc hơi sớm",
+  rate_q:"Người bạn vừa rồi thế nào?",
+  report:"Hãy cho chúng tôi biết nếu có vấn đề",
+  usage_today:"Dùng hôm nay",
+  new_friend:"Gặp bạn mới",
+  home:"Trang chủ",
+  my_friends:"Bạn bè",
+  friends_sub:"Chào bạn đang online qua video",
+  no_friends:"Chưa có bạn nào",
+  add_friend_hint:"Nhấn ❤️ khi gọi\nđể thêm bạn",
+  online:"Đang online", offline:"Ngoại tuyến",
+  call_friend:"Gọi video",
+  loading:"Đang tải...",
+  cancel:"Hủy", confirm:"OK", delete:"Xóa", leave:"Kết thúc",
+  cam:"Camera", mic:"Mic", sub:"Phụ đề", swap:"Đổi",
+  member_title:"Thành viên xác minh Globut",
+  member_safe:"Dấu hiệu để gặp gỡ an tâm",
+  member_desc:"Thành viên xác minh kết nối trước.\nGặp gỡ an toàn với dấu xác minh.",
+  member_cta:"Trở thành thành viên",
+  leave_q:"Thoát ngay?",
+  end_call_q:"Kết thúc cuộc gọi?",
+  delete_friend_q:"Xóa người bạn này?",
+  report_q:"Báo cáo người dùng này?",
+  t_nickname:"Vui lòng nhập biệt danh",
+  t_age:"Vui lòng chọn độ tuổi",
+  t_country:"Vui lòng chọn quốc gia",
+  t_saved:"Đã cập nhật hồ sơ",
+  t_cam:"Bật camera và mic để gặp bạn",
+  t_added:"Đã thêm bạn ❤️",
+  t_already:"Đã là bạn bè",
+  t_disconnected:"Bạn đã ngắt kết nối",
+  t_reported:"Cảm ơn đã báo. Sẽ không kết nối lại người này",
+  t_rated:"Cảm ơn đánh giá của bạn!",
+  t_next:"Đang tìm bạn tiếp theo",
+  t_member_soon:"Thành viên sẽ mở sau khi ra mắt",
+  t_calling:" đang được gọi...",
+  t_no_answer:" không trả lời",
+  t_busy:" đang bận gọi khác",
+  t_reject:" hiện không thể nghe",
+  banned_title:"Tài khoản bị hạn chế",
+  banned_desc:"Tài khoản bị hạn chế do bị báo cáo nhiều.",
+    t_login_err:"Lỗi đăng nhập. Vui lòng thử lại",
+    t_friend_loading:"Đang tải thông tin bạn",
+    t_friend_fail:"Không thêm được bạn",
+    t_busy_self:"Đang trong cuộc gọi",
+    report_detail:"Hành vi không phù hợp, khỏa thân, lăng mạ sẽ bị báo cáo",
+    call_incoming:" đang gọi video cho bạn. Nghe máy?"
+};
+
+I18N.id={
+  splash_sub:"Tempat berteman seluruh dunia",
+  login_title:"Teman sedunia\nlewat video",
+  login_sub:"",
+  login_google:"Lanjut dengan Google",
+  login_consent:"Khusus usia 40+<br>Memulai berarti setuju <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Ketentuan</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Privasi</a>",
+  onboard_sub:"Tertawa bersama,\njadi teman",
+  btn_start:"Temui teman",
+  profile_title:"Ceritakan tentang Anda",
+  profile_sub:"Begini teman melihat Anda",
+  profile_my:"Profil saya",
+  profile_my_sub:"Bisa diubah kapan saja",
+  photo_add:"Tambah foto",
+  photo_tap:"Ketuk untuk menambah foto",
+  nickname:"Nama panggilan",
+  age:"Kelompok usia",
+  age_peer:"Temui sebaya",
+  age_40:"40-an", age_50:"50-an", age_60:"60+",
+  gender:"Gender (opsional)",
+  male:"Pria", female:"Wanita", private:"Pribadi",
+  setup_title:"Temui teman\ndi seluruh dunia",
+  setup_sub:"Tekan tombol untuk terhubung",
+  pick_country:"Pilih negara",
+  country_q:"Dari negara mana?",
+  country_search:"Cari negara",
+  matching:"Mencari teman",
+  matching_sub:"Sebentar ya!",
+  match_global:"Mencari teman sedunia",
+  connecting:"Menghubungkan dengan teman...",
+  connected:"Terhubung",
+  friend:"Teman",
+  next:"Lanjut",
+  result_good:"Obrolan yang seru!",
+  result_short:"Berakhir terlalu cepat",
+  rate_q:"Bagaimana teman barumu?",
+  report:"Beri tahu kami jika ada masalah",
+  usage_today:"Pemakaian hari ini",
+  new_friend:"Temui teman baru",
+  home:"Beranda",
+  my_friends:"Teman saya",
+  friends_sub:"Sapa teman online lewat video",
+  no_friends:"Belum ada teman",
+  add_friend_hint:"Tekan ❤️ saat panggilan\nuntuk menambah teman",
+  online:"Online", offline:"Offline",
+  call_friend:"Video call",
+  loading:"Memuat...",
+  cancel:"Batal", confirm:"OK", delete:"Hapus", leave:"Selesai",
+  cam:"Kamera", mic:"Mik", sub:"Subtitel", swap:"Balik",
+  member_title:"Anggota Terverifikasi Globut",
+  member_safe:"Tanda agar bertemu dengan tenang",
+  member_desc:"Anggota terverifikasi terhubung lebih dulu.\nBertemu aman dengan tanda verifikasi.",
+  member_cta:"Jadi anggota",
+  leave_q:"Keluar sekarang?",
+  end_call_q:"Akhiri panggilan?",
+  delete_friend_q:"Hapus teman ini?",
+  report_q:"Laporkan pengguna ini?",
+  t_nickname:"Masukkan nama panggilan",
+  t_age:"Pilih kelompok usia",
+  t_country:"Pilih negara Anda",
+  t_saved:"Profil diperbarui",
+  t_cam:"Nyalakan kamera dan mik untuk bertemu teman",
+  t_added:"Ditambahkan sebagai teman ❤️",
+  t_already:"Sudah berteman",
+  t_disconnected:"Teman terputus",
+  t_reported:"Terima kasih. Tidak akan dicocokkan lagi",
+  t_rated:"Terima kasih atas penilaiannya!",
+  t_next:"Mencari teman berikutnya",
+  t_member_soon:"Keanggotaan dibuka setelah rilis",
+  t_calling:" sedang dipanggil...",
+  t_no_answer:" tidak menjawab",
+  t_busy:" sedang panggilan lain",
+  t_reject:" tidak bisa menjawab sekarang",
+  banned_title:"Akun dibatasi",
+  banned_desc:"Akun dibatasi karena banyak laporan.",
+    t_login_err:"Masalah login. Coba lagi",
+    t_friend_loading:"Memuat info teman",
+    t_friend_fail:"Gagal menambah teman",
+    t_busy_self:"Sedang dalam panggilan",
+    report_detail:"Perilaku tidak pantas, ketelanjangan, atau pelecehan akan dilaporkan",
+    call_incoming:" menelepon video. Jawab?"
+};
+
+I18N.zh={
+  splash_sub:"结识全球同龄朋友的地方",
+  login_title:"全世界的朋友\n用视频",
+  login_sub:"",
+  login_google:"用 Google 开始",
+  login_consent:"仅限40岁以上<br>开始即同意 <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">条款</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">隐私</a>",
+  onboard_sub:"一起欢笑\n就成了朋友",
+  btn_start:"去见朋友",
+  profile_title:"先介绍一下自己",
+  profile_sub:"朋友看到的就是这样",
+  profile_my:"我的资料",
+  profile_my_sub:"随时可以修改",
+  photo_add:"添加照片",
+  photo_tap:"点击添加照片",
+  nickname:"昵称",
+  age:"年龄段",
+  age_peer:"结识同龄人",
+  age_40:"40多岁", age_50:"50多岁", age_60:"60岁以上",
+  gender:"性别（可选）",
+  male:"男", female:"女", private:"不公开",
+  setup_title:"结识全世界的\n朋友",
+  setup_sub:"点击按钮立即连接",
+  pick_country:"选择国家",
+  country_q:"哪个国家的朋友？",
+  country_search:"搜索国家",
+  matching:"正在寻找朋友",
+  matching_sub:"请稍候！",
+  match_global:"正在寻找全球朋友",
+  connecting:"正在与朋友连接...",
+  connected:"已连接",
+  friend:"朋友",
+  next:"下一个",
+  result_good:"聊得很愉快！",
+  result_short:"结束得有点快",
+  rate_q:"刚认识的朋友怎么样？",
+  report:"如有不愉快请告诉我们",
+  usage_today:"今日使用",
+  new_friend:"认识新朋友",
+  home:"主页",
+  my_friends:"我的朋友",
+  friends_sub:"用视频和在线朋友打招呼",
+  no_friends:"还没有朋友",
+  add_friend_hint:"通话时点❤️\n添加朋友",
+  online:"在线", offline:"离线",
+  call_friend:"视频通话",
+  loading:"加载中...",
+  cancel:"取消", confirm:"确定", delete:"删除", leave:"结束",
+  cam:"摄像头", mic:"麦克风", sub:"字幕", swap:"翻转",
+  member_title:"Globut 认证会员",
+  member_safe:"安心相见的标志",
+  member_desc:"认证会员优先连接。\n凭认证标志安心相见。",
+  member_cta:"成为认证会员",
+  leave_q:"确定离开？",
+  end_call_q:"结束通话？",
+  delete_friend_q:"删除这位朋友？",
+  report_q:"举报此用户？",
+  t_nickname:"请输入昵称",
+  t_age:"请选择年龄段",
+  t_country:"请选择国家",
+  t_saved:"资料已更新",
+  t_cam:"请打开摄像头和麦克风",
+  t_added:"已添加为朋友 ❤️",
+  t_already:"已经是朋友了",
+  t_disconnected:"与朋友的连接已断开",
+  t_reported:"感谢告知。不会再与此人连接",
+  t_rated:"感谢您的评价！",
+  t_next:"正在寻找下一位朋友",
+  t_member_soon:"认证会员将在正式上线后开放",
+  t_calling:" 正在呼叫...",
+  t_no_answer:" 没有应答",
+  t_busy:" 正在其他通话中",
+  t_reject:" 现在无法接听",
+  banned_title:"账号已受限",
+  banned_desc:"因举报累积，账号已受限。",
+    t_login_err:"登录出现问题，请重试",
+    t_friend_loading:"正在加载好友信息",
+    t_friend_fail:"添加好友失败",
+    t_busy_self:"已在通话中",
+    report_detail:"不当行为、裸露、辱骂等将被举报",
+    call_incoming:" 正在视频通话。接听吗？"
+};
+
+I18N.es={
+  splash_sub:"Donde haces amigos en todo el mundo",
+  login_title:"Amigos del mundo\npor video",
+  login_sub:"",
+  login_google:"Continuar con Google",
+  login_consent:"Solo mayores de 40<br>Al empezar aceptas <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Términos</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Privacidad</a>",
+  onboard_sub:"Reíd juntos\ny seréis amigos",
+  btn_start:"Conocer a alguien",
+  profile_title:"Cuéntanos sobre ti",
+  profile_sub:"Así te verán tus amigos",
+  profile_my:"Mi perfil",
+  profile_my_sub:"Puedes cambiarlo cuando quieras",
+  photo_add:"Añadir foto",
+  photo_tap:"Toca para añadir foto",
+  nickname:"Apodo",
+  age:"Edad",
+  age_peer:"Conoce a tu generación",
+  age_40:"40s", age_50:"50s", age_60:"60+",
+  gender:"Género (opcional)",
+  male:"Hombre", female:"Mujer", private:"Privado",
+  setup_title:"Conoce amigos\nde todo el mundo",
+  setup_sub:"Pulsa el botón para conectar",
+  pick_country:"Elegir país",
+  country_q:"¿De qué país?",
+  country_search:"Buscar país",
+  matching:"Buscando un amigo",
+  matching_sub:"¡Un momento!",
+  match_global:"Buscando amigos por el mundo",
+  connecting:"Conectando con un amigo...",
+  connected:"Conectado",
+  friend:"Amigo",
+  next:"Siguiente",
+  result_good:"¡Buena charla!",
+  result_short:"Terminó muy pronto",
+  rate_q:"¿Qué tal tu nuevo amigo?",
+  report:"Avísanos si algo estuvo mal",
+  usage_today:"Uso de hoy",
+  new_friend:"Conocer a alguien nuevo",
+  home:"Inicio",
+  my_friends:"Mis amigos",
+  friends_sub:"Saluda por video a amigos en línea",
+  no_friends:"Aún no tienes amigos",
+  add_friend_hint:"Pulsa ❤️ en la llamada\npara añadir un amigo",
+  online:"En línea", offline:"Desconectado",
+  call_friend:"Videollamada",
+  loading:"Cargando...",
+  cancel:"Cancelar", confirm:"OK", delete:"Eliminar", leave:"Salir",
+  cam:"Cámara", mic:"Micro", sub:"Subtítulos", swap:"Girar",
+  member_title:"Miembro Verificado Globut",
+  member_safe:"Una señal para conocer con confianza",
+  member_desc:"Los miembros verificados conectan primero.\nConoce con seguridad gracias a la marca.",
+  member_cta:"Hazte miembro",
+  leave_q:"¿Salir ahora?",
+  end_call_q:"¿Terminar la llamada?",
+  delete_friend_q:"¿Eliminar a este amigo?",
+  report_q:"¿Reportar a este usuario?",
+  t_nickname:"Introduce un apodo",
+  t_age:"Selecciona tu edad",
+  t_country:"Selecciona tu país",
+  t_saved:"Perfil actualizado",
+  t_cam:"Activa cámara y micro para conocer amigos",
+  t_added:"Añadido como amigo ❤️",
+  t_already:"Ya es tu amigo",
+  t_disconnected:"El amigo se desconectó",
+  t_reported:"Gracias por avisar. No volverás a conectar con esta persona",
+  t_rated:"¡Gracias por tu valoración!",
+  t_next:"Buscando al siguiente amigo",
+  t_member_soon:"La membresía se abre tras el lanzamiento",
+  t_calling:" está siendo llamado...",
+  t_no_answer:" no respondió",
+  t_busy:" está en otra llamada",
+  t_reject:" no puede contestar ahora",
+  banned_title:"Cuenta restringida",
+  banned_desc:"Tu cuenta está restringida por reportes.",
+    t_login_err:"Problema al iniciar sesión. Inténtalo de nuevo",
+    t_friend_loading:"Cargando info del amigo",
+    t_friend_fail:"No se pudo añadir al amigo",
+    t_busy_self:"Ya estás en una llamada",
+    report_detail:"Se reportará conducta inapropiada, desnudez o abuso",
+    call_incoming:" te llama por video. ¿Contestar?"
+};
+
+I18N.tr={
+  splash_sub:"Dünyanın dört bir yanından arkadaş",
+  login_title:"Dünyadan arkadaşlar\ngörüntülü",
+  login_sub:"",
+  login_google:"Google ile başla",
+  login_consent:"Sadece 40 yaş üstü<br>Başlayınca <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Şartlar</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Gizlilik</a> kabul edilir",
+  onboard_sub:"Birlikte gülünce\narkadaş olunur",
+  btn_start:"Arkadaşa git",
+  profile_title:"Kendini tanıt",
+  profile_sub:"Arkadaşların seni böyle görecek",
+  profile_my:"Profilim",
+  profile_my_sub:"İstediğin zaman değiştir",
+  photo_add:"Fotoğraf ekle",
+  photo_tap:"Fotoğraf eklemek için dokun",
+  nickname:"Takma ad",
+  age:"Yaş grubu",
+  age_peer:"Akranlarınla tanış",
+  age_40:"40'lar", age_50:"50'ler", age_60:"60+",
+  gender:"Cinsiyet (isteğe bağlı)",
+  male:"Erkek", female:"Kadın", private:"Gizli",
+  setup_title:"Dünyadan\narkadaşlarla tanış",
+  setup_sub:"Bağlanmak için butona bas",
+  pick_country:"Ülke seç",
+  country_q:"Hangi ülke?",
+  country_search:"Ülke ara",
+  matching:"Arkadaş aranıyor",
+  matching_sub:"Bir saniye!",
+  match_global:"Dünyadan arkadaş aranıyor",
+  connecting:"Arkadaşa bağlanılıyor...",
+  connected:"Bağlandı",
+  friend:"Arkadaş",
+  next:"Sonraki",
+  result_good:"Güzel sohbetti!",
+  result_short:"Çok erken bitti",
+  rate_q:"Yeni arkadaşın nasıldı?",
+  report:"Bir sorun olduysa bize bildir",
+  usage_today:"Bugünkü kullanım",
+  new_friend:"Yeni arkadaşla tanış",
+  home:"Ana sayfa",
+  my_friends:"Arkadaşlarım",
+  friends_sub:"Çevrimiçi arkadaşlara görüntülü selam ver",
+  no_friends:"Henüz arkadaş yok",
+  add_friend_hint:"Görüşmede ❤️ basarak\narkadaş ekle",
+  online:"Çevrimiçi", offline:"Çevrimdışı",
+  call_friend:"Görüntülü ara",
+  loading:"Yükleniyor...",
+  cancel:"İptal", confirm:"Tamam", delete:"Sil", leave:"Bitir",
+  cam:"Kamera", mic:"Mikrofon", sub:"Altyazı", swap:"Çevir",
+  member_title:"Globut Onaylı Üye",
+  member_safe:"Güvenle tanışma işareti",
+  member_desc:"Onaylı üyeler önce bağlanır.\nOnay işaretiyle güvenle tanış.",
+  member_cta:"Üye ol",
+  leave_q:"Şimdi çık?",
+  end_call_q:"Görüşmeyi bitir?",
+  delete_friend_q:"Bu arkadaşı sil?",
+  report_q:"Bu kullanıcıyı bildir?",
+  t_nickname:"Lütfen takma ad gir",
+  t_age:"Lütfen yaş grubu seç",
+  t_country:"Lütfen ülkeni seç",
+  t_saved:"Profil güncellendi",
+  t_cam:"Arkadaşlarla tanışmak için kamera ve mikrofonu aç",
+  t_added:"Arkadaş olarak eklendi ❤️",
+  t_already:"Zaten arkadaşın",
+  t_disconnected:"Arkadaşın bağlantısı kesildi",
+  t_reported:"Bildirdiğin için teşekkürler. Bu kişiyle tekrar eşleşmeyeceksin",
+  t_rated:"Değerlendirmen için teşekkürler!",
+  t_next:"Sonraki arkadaş aranıyor",
+  t_member_soon:"Üyelik lansmandan sonra açılır",
+  t_calling:" aranıyor...",
+  t_no_answer:" yanıt vermedi",
+  t_busy:" başka görüşmede",
+  t_reject:" şu an yanıt veremiyor",
+  banned_title:"Hesap kısıtlandı",
+  banned_desc:"Hesabın şikayetler nedeniyle kısıtlandı.",
+    t_login_err:"Giriş sorunu. Tekrar deneyin",
+    t_friend_loading:"Arkadaş bilgisi yükleniyor",
+    t_friend_fail:"Arkadaş eklenemedi",
+    t_busy_self:"Zaten görüşmedesin",
+    report_detail:"Uygunsuz davranış, çıplaklık veya hakaret bildirilir",
+    call_incoming:" görüntülü arıyor. Cevapla?"
+};
+
+I18N.pt={
+  splash_sub:"Onde você faz amigos no mundo todo",
+  login_title:"Amigos do mundo\npor vídeo",
+  login_sub:"",
+  login_google:"Continuar com Google",
+  login_consent:"Apenas maiores de 40<br>Ao começar aceita <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Termos</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Privacidade</a>",
+  onboard_sub:"Rindo juntos\nviram amigos",
+  btn_start:"Conhecer alguém",
+  profile_title:"Fale sobre você",
+  profile_sub:"É assim que os amigos verão você",
+  profile_my:"Meu perfil",
+  profile_my_sub:"Pode mudar quando quiser",
+  photo_add:"Adicionar foto",
+  photo_tap:"Toque para adicionar foto",
+  nickname:"Apelido",
+  age:"Faixa etária",
+  age_peer:"Conheça sua geração",
+  age_40:"40s", age_50:"50s", age_60:"60+",
+  gender:"Gênero (opcional)",
+  male:"Homem", female:"Mulher", private:"Privado",
+  setup_title:"Conheça amigos\npelo mundo",
+  setup_sub:"Toque no botão para conectar",
+  pick_country:"Escolher país",
+  country_q:"De qual país?",
+  country_search:"Buscar país",
+  matching:"Procurando um amigo",
+  matching_sub:"Um momento!",
+  match_global:"Procurando amigos pelo mundo",
+  connecting:"Conectando com um amigo...",
+  connected:"Conectado",
+  friend:"Amigo",
+  next:"Próximo",
+  result_good:"Boa conversa!",
+  result_short:"Acabou cedo demais",
+  rate_q:"Como foi seu novo amigo?",
+  report:"Avise se algo deu errado",
+  usage_today:"Uso de hoje",
+  new_friend:"Conhecer alguém novo",
+  home:"Início",
+  my_friends:"Meus amigos",
+  friends_sub:"Diga oi por vídeo a amigos online",
+  no_friends:"Ainda sem amigos",
+  add_friend_hint:"Toque ❤️ na chamada\npara adicionar amigo",
+  online:"Online", offline:"Offline",
+  call_friend:"Videochamada",
+  loading:"Carregando...",
+  cancel:"Cancelar", confirm:"OK", delete:"Excluir", leave:"Encerrar",
+  cam:"Câmera", mic:"Microfone", sub:"Legendas", swap:"Virar",
+  member_title:"Membro Verificado Globut",
+  member_safe:"Um sinal para se encontrar com confiança",
+  member_desc:"Membros verificados conectam primeiro.\nEncontre com segurança pela marca.",
+  member_cta:"Torne-se membro",
+  leave_q:"Sair agora?",
+  end_call_q:"Encerrar a chamada?",
+  delete_friend_q:"Remover este amigo?",
+  report_q:"Denunciar este usuário?",
+  t_nickname:"Digite um apelido",
+  t_age:"Selecione a faixa etária",
+  t_country:"Selecione seu país",
+  t_saved:"Perfil atualizado",
+  t_cam:"Ative câmera e microfone para conhecer amigos",
+  t_added:"Adicionado como amigo ❤️",
+  t_already:"Já é seu amigo",
+  t_disconnected:"O amigo se desconectou",
+  t_reported:"Obrigado por avisar. Não será conectado de novo",
+  t_rated:"Obrigado pela avaliação!",
+  t_next:"Procurando o próximo amigo",
+  t_member_soon:"A assinatura abre após o lançamento",
+  t_calling:" está sendo chamado...",
+  t_no_answer:" não atendeu",
+  t_busy:" está em outra chamada",
+  t_reject:" não pode atender agora",
+  banned_title:"Conta restrita",
+  banned_desc:"Sua conta foi restrita por denúncias.",
+    t_login_err:"Problema no login. Tente novamente",
+    t_friend_loading:"Carregando info do amigo",
+    t_friend_fail:"Falha ao adicionar amigo",
+    t_busy_self:"Já está em uma chamada",
+    report_detail:"Comportamento inadequado, nudez ou abuso serão denunciados",
+    call_incoming:" está te ligando por vídeo. Atender?"
+};
+
+I18N.de={
+  splash_sub:"Hier findest du Freunde weltweit",
+  login_title:"Freunde weltweit\nper Video",
+  login_sub:"",
+  login_google:"Mit Google starten",
+  login_consent:"Nur ab 40 Jahren<br>Mit dem Start stimmst du <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">AGB</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Datenschutz</a> zu",
+  onboard_sub:"Zusammen lachen,\nFreunde werden",
+  btn_start:"Freund treffen",
+  profile_title:"Erzähl von dir",
+  profile_sub:"So sehen dich deine Freunde",
+  profile_my:"Mein Profil",
+  profile_my_sub:"Jederzeit änderbar",
+  photo_add:"Foto hinzufügen",
+  photo_tap:"Tippen, um ein Foto hinzuzufügen",
+  nickname:"Spitzname",
+  age:"Altersgruppe",
+  age_peer:"Triff Gleichaltrige",
+  age_40:"40er", age_50:"50er", age_60:"60+",
+  gender:"Geschlecht (optional)",
+  male:"Mann", female:"Frau", private:"Privat",
+  setup_title:"Triff Freunde\nweltweit",
+  setup_sub:"Auf den Knopf tippen zum Verbinden",
+  pick_country:"Land wählen",
+  country_q:"Welches Land?",
+  country_search:"Land suchen",
+  matching:"Suche einen Freund",
+  matching_sub:"Einen Moment!",
+  match_global:"Suche Freunde weltweit",
+  connecting:"Verbinde mit einem Freund...",
+  connected:"Verbunden",
+  friend:"Freund",
+  next:"Weiter",
+  result_good:"Schönes Gespräch!",
+  result_short:"Zu früh beendet",
+  rate_q:"Wie war dein neuer Freund?",
+  report:"Sag uns, wenn etwas nicht stimmte",
+  usage_today:"Heutige Nutzung",
+  new_friend:"Neuen Freund treffen",
+  home:"Start",
+  my_friends:"Meine Freunde",
+  friends_sub:"Grüße Online-Freunde per Video",
+  no_friends:"Noch keine Freunde",
+  add_friend_hint:"Tippe ❤️ im Anruf,\num einen Freund hinzuzufügen",
+  online:"Online", offline:"Offline",
+  call_friend:"Videoanruf",
+  loading:"Lädt...",
+  cancel:"Abbrechen", confirm:"OK", delete:"Löschen", leave:"Beenden",
+  cam:"Kamera", mic:"Mikro", sub:"Untertitel", swap:"Wechseln",
+  member_title:"Globut Verifiziertes Mitglied",
+  member_safe:"Ein Zeichen für sicheres Treffen",
+  member_desc:"Verifizierte Mitglieder verbinden zuerst.\nTriff dich sicher mit dem Zeichen.",
+  member_cta:"Mitglied werden",
+  leave_q:"Jetzt verlassen?",
+  end_call_q:"Anruf beenden?",
+  delete_friend_q:"Diesen Freund entfernen?",
+  report_q:"Diesen Nutzer melden?",
+  t_nickname:"Bitte Spitznamen eingeben",
+  t_age:"Bitte Altersgruppe wählen",
+  t_country:"Bitte Land wählen",
+  t_saved:"Profil aktualisiert",
+  t_cam:"Kamera und Mikro für Treffen einschalten",
+  t_added:"Als Freund hinzugefügt ❤️",
+  t_already:"Schon dein Freund",
+  t_disconnected:"Freund hat die Verbindung getrennt",
+  t_reported:"Danke für den Hinweis. Keine erneute Verbindung",
+  t_rated:"Danke für deine Bewertung!",
+  t_next:"Suche den nächsten Freund",
+  t_member_soon:"Mitgliedschaft startet nach dem Launch",
+  t_calling:" wird angerufen...",
+  t_no_answer:" hat nicht geantwortet",
+  t_busy:" ist in einem anderen Anruf",
+  t_reject:" kann gerade nicht annehmen",
+  banned_title:"Konto eingeschränkt",
+  banned_desc:"Dein Konto wurde wegen Meldungen eingeschränkt.",
+    t_login_err:"Anmeldeproblem. Bitte erneut versuchen",
+    t_friend_loading:"Lade Freundinfo",
+    t_friend_fail:"Freund hinzufügen fehlgeschlagen",
+    t_busy_self:"Bereits in einem Anruf",
+    report_detail:"Unangemessenes Verhalten, Nacktheit oder Beleidigung wird gemeldet",
+    call_incoming:" ruft dich per Video an. Annehmen?"
+};
+
+I18N.fr={
+  splash_sub:"Où l'on se fait des amis du monde entier",
+  login_title:"Des amis du monde\nen vidéo",
+  login_sub:"",
+  login_google:"Continuer avec Google",
+  login_consent:"Réservé aux 40 ans+<br>En commençant tu acceptes <a href=\"terms.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Conditions</a> · <a href=\"privacy.html\" target=\"_blank\" style=\"color:rgba(255,255,255,.85);\">Confidentialité</a>",
+  onboard_sub:"Rire ensemble,\ndevenir amis",
+  btn_start:"Rencontrer un ami",
+  profile_title:"Parle-nous de toi",
+  profile_sub:"Voici comment tes amis te verront",
+  profile_my:"Mon profil",
+  profile_my_sub:"Modifiable à tout moment",
+  photo_add:"Ajouter une photo",
+  photo_tap:"Touche pour ajouter une photo",
+  nickname:"Pseudo",
+  age:"Tranche d'âge",
+  age_peer:"Rencontre ta génération",
+  age_40:"40 ans", age_50:"50 ans", age_60:"60+",
+  gender:"Genre (facultatif)",
+  male:"Homme", female:"Femme", private:"Privé",
+  setup_title:"Rencontre des amis\ndu monde entier",
+  setup_sub:"Appuie sur le bouton pour te connecter",
+  pick_country:"Choisir un pays",
+  country_q:"Quel pays ?",
+  country_search:"Chercher un pays",
+  matching:"Recherche d'un ami",
+  matching_sub:"Un instant !",
+  match_global:"Recherche d'amis dans le monde",
+  connecting:"Connexion avec un ami...",
+  connected:"Connecté",
+  friend:"Ami",
+  next:"Suivant",
+  result_good:"Belle conversation !",
+  result_short:"Terminé trop tôt",
+  rate_q:"Comment était ton nouvel ami ?",
+  report:"Dis-nous si quelque chose n'allait pas",
+  usage_today:"Utilisation du jour",
+  new_friend:"Rencontrer quelqu'un",
+  home:"Accueil",
+  my_friends:"Mes amis",
+  friends_sub:"Dis bonjour en vidéo aux amis en ligne",
+  no_friends:"Pas encore d'amis",
+  add_friend_hint:"Touche ❤️ pendant l'appel\npour ajouter un ami",
+  online:"En ligne", offline:"Hors ligne",
+  call_friend:"Appel vidéo",
+  loading:"Chargement...",
+  cancel:"Annuler", confirm:"OK", delete:"Supprimer", leave:"Terminer",
+  cam:"Caméra", mic:"Micro", sub:"Sous-titres", swap:"Pivoter",
+  member_title:"Membre Vérifié Globut",
+  member_safe:"Un signe pour se rencontrer en confiance",
+  member_desc:"Les membres vérifiés se connectent en premier.\nRencontre en sécurité grâce au badge.",
+  member_cta:"Devenir membre",
+  leave_q:"Quitter maintenant ?",
+  end_call_q:"Terminer l'appel ?",
+  delete_friend_q:"Supprimer cet ami ?",
+  report_q:"Signaler cet utilisateur ?",
+  t_nickname:"Saisis un pseudo",
+  t_age:"Sélectionne ta tranche d'âge",
+  t_country:"Sélectionne ton pays",
+  t_saved:"Profil mis à jour",
+  t_cam:"Active la caméra et le micro pour rencontrer des amis",
+  t_added:"Ajouté comme ami ❤️",
+  t_already:"Déjà ton ami",
+  t_disconnected:"L'ami s'est déconnecté",
+  t_reported:"Merci de l'avoir signalé. Plus de connexion avec cette personne",
+  t_rated:"Merci pour ton évaluation !",
+  t_next:"Recherche du prochain ami",
+  t_member_soon:"L'adhésion ouvre après le lancement",
+  t_calling:" est appelé...",
+  t_no_answer:" n'a pas répondu",
+  t_busy:" est en autre appel",
+  t_reject:" ne peut pas répondre maintenant",
+  banned_title:"Compte restreint",
+  banned_desc:"Ton compte est restreint en raison de signalements.",
+    t_login_err:"Problème de connexion. Réessayez",
+    t_friend_loading:"Chargement des infos de l'ami",
+    t_friend_fail:"Échec de l'ajout d'ami",
+    t_busy_self:"Déjà en appel",
+    report_detail:"Comportement inapproprié, nudité ou abus seront signalés",
+    call_incoming:" vous appelle en vidéo. Répondre ?"
+};
+
+// ===== 언어 감지 + t() 함수 =====
+// 36개국 언어코드 → 번역 보유 언어 매핑 (없으면 영어 폴백)
+const LANG_FALLBACK={
+  ko:'ko', en:'en', ja:'ja', vi:'vi', id:'id', zh:'zh', es:'es', tr:'tr', pt:'pt', de:'de', fr:'fr',
+  // 번역 없는 언어 → 가까운 언어 또는 영어
+  ms:'id',  // 말레이어 → 인니어 (유사)
+  th:'en', hi:'en', it:'es', nl:'de', ru:'en', uk:'en', pl:'en',
+  sv:'en', no:'en', da:'en', fi:'en', el:'en', ro:'en', cs:'en', hu:'en', bg:'en', sk:'en'
+};
+
+let CUR_LANG='en';
+function detectLang(){
+  // 1) 저장된 선택 우선
+  const saved=localStorage.getItem('globut_lang');
+  if(saved && I18N[saved]) return saved;
+  // 2) 브라우저/기기 언어
+  const nav=(navigator.language||'en').toLowerCase().split('-')[0];
+  const mapped=LANG_FALLBACK[nav]||'en';
+  return I18N[mapped]?mapped:'en';
+}
+CUR_LANG=detectLang();
+
+function setLang(code){
+  if(I18N[code]){ CUR_LANG=code; localStorage.setItem('globut_lang',code); applyI18n(); }
+}
+
+// 번역 조회 (현재 언어 → 없으면 영어 → 없으면 키 그대로)
+function t(key){
+  if(I18N[CUR_LANG] && key in I18N[CUR_LANG]) return I18N[CUR_LANG][key];
+  if(I18N.en && key in I18N.en) return I18N.en[key];
+  return key;
+}
+
+// data-i18n 속성 가진 모든 요소에 번역 적용
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    const val=t(key);
+    if(val===''){ el.style.display='none'; return; }
+    // 줄바꿈(\n) → <br>, HTML 태그 포함 시 innerHTML
+    if(val.includes('\n')) el.innerHTML=val.replace(/\n/g,'<br>');
+    else if(/<[a-z]/i.test(val)) el.innerHTML=val;
+    else el.textContent=val;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph')));
+  });
+}
+
+/* ===== I18N END ===== */
+const DB_URL='https://qenuwywkrjsvxgurkcbe.supabase.co';
+const DB_KEY='sb_publishable_o7KC9YG-VnoqKMaWUauY5w_Ved962JU';
+const db=window.supabase.createClient(DB_URL,DB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+
+const langToDeepL={ko:'KO',en:'EN',ja:'JA',zh:'ZH',es:'ES',fr:'FR',de:'DE',pt:'PT'};
+// Deepgram 음성인식 지원 언어 기준 국가 (자막 품질 보장)
+const countryToLang={
+  KR:'ko',JP:'ja',US:'en',GB:'en',AU:'en',CA:'en',
+  VN:'vi',ID:'id',TH:'th',MY:'ms',PH:'en',IN:'hi',
+  CN:'zh',TW:'zh',
+  TR:'tr', // 터키 (아자르 핵심 시장)
+  DE:'de',FR:'fr',ES:'es',IT:'it',NL:'nl',
+  BR:'pt',PT:'pt',MX:'es',AR:'es',
+  RU:'ru',UA:'uk',PL:'pl',
+  SE:'sv',NO:'no',DK:'da',FI:'fi',
+  GR:'el',RO:'ro',CZ:'cs',HU:'hu',BG:'bg',SK:'sk'
+};
+const flagMap={
+  KR:'🇰🇷',JP:'🇯🇵',US:'🇺🇸',GB:'🇬🇧',AU:'🇦🇺',CA:'🇨🇦',
+  VN:'🇻🇳',ID:'🇮🇩',TH:'🇹🇭',MY:'🇲🇾',PH:'🇵🇭',IN:'🇮🇳',
+  CN:'🇨🇳',TW:'🇹🇼',
+  TR:'🇹🇷',
+  DE:'🇩🇪',FR:'🇫🇷',ES:'🇪🇸',IT:'🇮🇹',NL:'🇳🇱',
+  BR:'🇧🇷',PT:'🇵🇹',MX:'🇲🇽',AR:'🇦🇷',
+  RU:'🇷🇺',UA:'🇺🇦',PL:'🇵🇱',
+  SE:'🇸🇪',NO:'🇳🇴',DK:'🇩🇰',FI:'🇫🇮',
+  GR:'🇬🇷',RO:'🇷🇴',CZ:'🇨🇿',HU:'🇭🇺',BG:'🇧🇬',SK:'🇸🇰'
+};
+
+let cameraDevices=[];
+let myLang=null,targetCountry=null,userId=localStorage.getItem('rgeo_uid')||crypto.randomUUID();
+let roomId=null,pc=null,localStream=null,matchCh=null,callCh=null;
+let matchPoll=null,matchTimeout=null;
+let isMuted=false,isCamOff=false,timerSec=0,timerIv=null;
+let avatarDataUrl=null;
+
+function previewAvatar(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      // 256x256으로 리사이즈 (정사각형 크롭) → 용량 대폭 감소
+      const size=256;
+      const canvas=document.createElement('canvas');
+      canvas.width=size;canvas.height=size;
+      const ctx=canvas.getContext('2d');
+      // 정사각형 중앙 크롭
+      const min=Math.min(img.width,img.height);
+      const sx=(img.width-min)/2, sy=(img.height-min)/2;
+      ctx.drawImage(img,sx,sy,min,min,0,0,size,size);
+      // JPEG 70% 품질로 압축
+      avatarDataUrl=canvas.toDataURL('image/jpeg',0.7);
+      const pv=document.getElementById('avatarPreview');
+      pv.src=avatarDataUrl;
+      pv.style.display='block';
+      document.getElementById('avatarPlaceholder').style.display='none';
+      // 같은 파일을 다시 고를 수 있도록 input 비우기
+      e.target.value='';
+    };
+    img.onerror=()=>{ toast(t('t_friend_fail')); e.target.value=''; };
+    img.src=ev.target.result;
+  };
+  reader.onerror=()=>{ e.target.value=''; };
+  reader.readAsDataURL(file);
+}
+
+// 드래그 가능한 localVideo
+function initDraggable(){
+  const el=document.getElementById('localVideo');
+  let startX,startY,startLeft,startTop,isDragging=false;
+  const onStart=e=>{
+    isDragging=true;
+    const touch=e.touches?e.touches[0]:e;
+    startX=touch.clientX;startY=touch.clientY;
+    const rect=el.getBoundingClientRect();
+    startLeft=rect.left;startTop=rect.top;
+    el.style.transition='none';
+    e.preventDefault();
+  };
+  const onMove=e=>{
+    if(!isDragging)return;
+    const touch=e.touches?e.touches[0]:e;
+    const dx=touch.clientX-startX;
+    const dy=touch.clientY-startY;
+    const parent=el.parentElement.getBoundingClientRect();
+    let newLeft=startLeft+dx-parent.left;
+    let newTop=startTop+dy-parent.top;
+    newLeft=Math.max(8,Math.min(parent.width-el.offsetWidth-8,newLeft));
+    newTop=Math.max(8,Math.min(parent.height-el.offsetHeight-8,newTop));
+    el.style.left=newLeft+'px';
+    el.style.top=newTop+'px';
+    el.style.right='auto';el.style.bottom='auto';
+    e.preventDefault();
+  };
+  const onEnd=()=>{isDragging=false;el.style.transition='';};
+  el.addEventListener('touchstart',onStart,{passive:false});
+  el.addEventListener('touchmove',onMove,{passive:false});
+  el.addEventListener('touchend',onEnd);
+  el.addEventListener('mousedown',onStart);
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',onEnd);
+}
+initDraggable();
+
+// 앱 시작 시 카메라 목록만 가져오기 (권한 요청 없이)
+async function initPermissions(){
+  try{
+    // 이미 권한 있으면 목록 가져오기
+    const devices=await navigator.mediaDevices.enumerateDevices();
+    cameraDevices=devices.filter(d=>d.kind==='videoinput' && d.deviceId!=='');
+  }catch(e){
+    console.warn('기기 목록 조회 실패',e);
+  }
+}
+
+// 앱 시작: 기기 언어 감지해서 UI 번역 적용
+applyI18n();
+
+setupDeepLinkAuth(); // 앱: 딥링크 로그인 복귀 리스너 등록
+
+setTimeout(async()=>{
+  await initPermissions();
+  // 구글 세션 있으면 onAuthStateChange가 처리하므로 여기선 건드리지 않음
+  const{data:{session}}=await db.auth.getSession();
+  if(session?.user){
+    console.log('세션 있음 - onAuthStateChange가 처리');
+    return;
+  }
+  // 세션 없으면 로그인 화면
+  show('login');
+},1200);
+
+function goProfile(){show('profile');}
+
+// 프로필 화면 진입 시 구글 정보 미리 채우기
+async function prefillProfile(){
+  const{data:{session}}=await db.auth.getSession();
+  if(session?.user){
+    const meta=session.user.user_metadata||{};
+    const nickInput=document.getElementById('nicknameInput');
+    if(meta.full_name && !nickInput.value) nickInput.value=meta.full_name.slice(0,12);
+    if(meta.avatar_url){
+      avatarDataUrl=meta.avatar_url;
+      document.getElementById('avatarPreview').src=meta.avatar_url;
+      document.getElementById('avatarPreview').style.display='block';
+      document.getElementById('avatarPlaceholder').style.display='none';
+    }
+  }
+}
+
+// 구글 로그인
+// Capacitor 앱에서 실행 중인지 감지
+function isNativeApp(){
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
+async function loginWithGoogle(){
+  const redirectTo = isNativeApp()
+    ? 'com.rgeo.app://login-callback'   // 앱: 딥링크로 복귀
+    : window.location.href.split('?')[0].split('#')[0]; // 웹: 현재 주소
+
+  const{data,error}=await db.auth.signInWithOAuth({
+    provider:'google',
+    options:{
+      redirectTo,
+      skipBrowserRedirect: isNativeApp() // 앱이면 자동 이동 막고 직접 연다
+    }
+  });
+  if(error){ toast(t('t_login_err')); console.error(error); return; }
+
+  // 앱이면 인앱 브라우저로 OAuth URL 열기
+  if(isNativeApp() && data?.url){
+    const{Browser}=window.Capacitor.Plugins;
+    await Browser.open({url:data.url});
+  }
+}
+
+// 앱: 로그인 후 com.rgeo.app:// 으로 돌아왔을 때 토큰 처리
+function setupDeepLinkAuth(){
+  if(!isNativeApp()) return;
+  const{App,Browser}=window.Capacitor.Plugins;
+  App.addListener('appUrlOpen', async ({url})=>{
+    if(url && url.includes('login-callback')){
+      try{ await Browser.close(); }catch(e){}
+      // URL에서 토큰 추출 (code 또는 access_token 방식 모두 대응)
+      try{
+        if(url.includes('code=')){
+          const code=new URL(url).searchParams.get('code');
+          if(code) await db.auth.exchangeCodeForSession(code);
+        } else if(url.includes('access_token')){
+          const params=new URLSearchParams(url.split('#')[1]);
+          await db.auth.setSession({
+            access_token:params.get('access_token'),
+            refresh_token:params.get('refresh_token')
+          });
+        }
+      }catch(e){ console.error('딥링크 세션 처리 실패',e); }
+    }
+  });
+}
+
+// 로그인 세션 확인 (OAuth 리다이렉트 후)
+async function checkAuthSession(){
+  const{data:{session}}=await db.auth.getSession();
+  if(session?.user){
+    const googleId=session.user.id;
+    userId=googleId;
+    localStorage.setItem('rgeo_uid',googleId);
+    const meta=session.user.user_metadata||{};
+    if(meta.avatar_url && !avatarDataUrl) avatarDataUrl=meta.avatar_url;
+    return {loggedIn:true, name:meta.full_name||meta.name, avatar:meta.avatar_url};
+  }
+  return {loggedIn:false};
+}
+
+// 로그인 후 화면 라우팅
+async function routeAfterAuth(){
+  setupFriendCallListener(); // 친구 영상 호출 받기 리스너 등록
+  startHeartbeat(); // 온라인 상태 유지 (친구 목록에 접속 중 표시)
+  const{data}=await db.from('users').select('*').eq('user_id',userId).maybeSingle();
+  if(data?.banned){
+    document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;padding:40px;text-align:center;font-family:Pretendard,sans-serif;background:#fff;"><div style="font-size:48px;margin-bottom:20px;">🚫</div><div style="font-size:20px;font-weight:700;color:#111;margin-bottom:10px;">이용이 제한된 계정입니다</div><div style="font-size:14px;color:#888;line-height:1.6;">부적절한 행동으로 신고가 누적되어<br>서비스 이용이 제한되었습니다.<br><br>문의: rgeo.labs@gmail.com</div></div>';
+    return;
+  }
+  if(data?.nickname){
+    const today=new Date().toISOString().slice(0,10);
+    const update={last_active:new Date().toISOString()};
+    if(!data.first_active) update.first_active=today;
+    try{ db.from('users').update(update).eq('user_id',userId); }catch(e){}
+    show('onboard');
+  } else {
+    // 로그인은 됐지만 프로필 없음 → 프로필 설정으로
+    show('profile');
+    prefillProfile();
+  }
+}
+
+// 로그인 상태 변화 감지 (구글 리다이렉트 후 자동 처리)
+db.auth.onAuthStateChange((event, session)=>{
+  console.log('Auth 이벤트:', event, session?.user?.id);
+  if((event==='SIGNED_IN'||event==='INITIAL_SESSION') && session?.user){
+    userId=session.user.id;
+    localStorage.setItem('rgeo_uid',userId);
+    const meta=session.user.user_metadata||{};
+    if(meta.avatar_url && !avatarDataUrl) avatarDataUrl=meta.avatar_url;
+    routeAfterAuth();
+  }
+});
+
+// 나이·성별 그리드
+function initSimpleGrid(id,setter){
+  document.getElementById(id).querySelectorAll('.pick-row').forEach(el=>{
+    el.addEventListener('click',()=>{
+      document.getElementById(id).querySelectorAll('.pick-row').forEach(r=>{r.classList.remove('sel');r.style.background='var(--bg)';});
+      el.classList.add('sel');el.style.background='var(--blue-light)';
+      setter(el.dataset.val);
+    });
+  });
+}
+var ageGroup=null, gender=null, myCountry=null;
+var isProfileEditMode=false;
+initSimpleGrid('ageGrid',v=>ageGroup=v);
+initSimpleGrid('genderGrid',v=>gender=v);
+initSimpleGrid('myCountryGrid',v=>myCountry=v);
+
+// 그리드에서 특정 값을 선택 상태로 표시
+function setGridValue(gridId,val){
+  if(!val)return;
+  document.getElementById(gridId).querySelectorAll('.pick-row').forEach(r=>{
+    if(r.dataset.val===val){ r.classList.add('sel'); r.style.background='var(--blue-light)'; }
+    else { r.classList.remove('sel'); r.style.background='var(--bg)'; }
+  });
+}
+
+// 내 프로필 수정 열기 - 기존 데이터 불러오기
+async function openProfileEdit(){
+  isProfileEditMode=true;
+  document.getElementById('profileTitle').innerHTML='내 프로필';
+  document.getElementById('profileSubtitle').textContent='언제든 바꿀 수 있어요';
+  document.getElementById('profileBackBtn').style.display='flex';
+  document.getElementById('profileSaveBtn').textContent='저장하기';
+
+  // 기존 데이터 불러오기
+  const{data}=await db.from('users').select('*').eq('user_id',userId).maybeSingle();
+  if(data){
+    document.getElementById('nicknameInput').value=data.nickname||'';
+    myCountry=data.my_country||null;
+    ageGroup=data.age_group||null;
+    gender=data.gender||null;
+    setGridValue('myCountryGrid',myCountry);
+    setGridValue('ageGrid',ageGroup);
+    setGridValue('genderGrid',gender);
+    if(data.avatar_url){
+      avatarDataUrl=data.avatar_url;
+      document.getElementById('avatarPreview').src=data.avatar_url;
+      document.getElementById('avatarPreview').style.display='block';
+      document.getElementById('avatarPlaceholder').style.display='none';
+    }
+  }
+  show('profile');
+}
+
+async function saveProfile(){
+  const nickname=document.getElementById('nicknameInput').value.trim();
+  if(!nickname){toast(t('t_nickname'));return;}
+  if(!myCountry){toast(t('t_country'));return;}
+  if(!ageGroup){toast(t('t_age'));return;}
+
+  const profile={
+    user_id:userId,
+    nickname,
+    my_country:myCountry,
+    age_group:ageGroup,
+    gender:gender||'none',
+    avatar_url:avatarDataUrl||null,
+    last_active:new Date().toISOString()
+  };
+  // 신규 가입이면 가입일 기록
+  if(!isProfileEditMode){
+    profile.first_active=new Date().toISOString().slice(0,10);
+    profile.created_at=new Date().toISOString();
+  }
+  await db.from('users').upsert(profile);
+  localStorage.setItem('rgeo_country',myCountry);
+  if(avatarDataUrl) localStorage.setItem('rgeo_avatar',avatarDataUrl);
+  if(isProfileEditMode){
+    isProfileEditMode=false;
+    toast(t('t_saved'));
+    show('setup');
+  } else {
+    show('onboard');
+  }
+}
+
+// 기기 언어 자동 감지
+const browserLang=navigator.language.split('-')[0];
+myLang=langToDeepL[browserLang]?browserLang:'ko';
+
+// 나라 한글 이름맵 (검색·표시용)
+const countryNameMap={
+  KR:'한국',JP:'일본',US:'미국',GB:'영국',AU:'호주',CA:'캐나다',
+  VN:'베트남',ID:'인도네시아',TH:'태국',MY:'말레이시아',PH:'필리핀',IN:'인도',
+  CN:'중국',TW:'대만',TR:'터키',
+  DE:'독일',FR:'프랑스',ES:'스페인',IT:'이탈리아',NL:'네덜란드',
+  BR:'브라질',PT:'포르투갈',MX:'멕시코',AR:'아르헨티나',
+  RU:'러시아',UA:'우크라이나',PL:'폴란드',
+  SE:'스웨덴',NO:'노르웨이',DK:'덴마크',FI:'핀란드',
+  GR:'그리스',RO:'루마니아',CZ:'체코',HU:'헝가리',BG:'불가리아',SK:'슬로바키아'
+};
+
+// "친구 만나러 가기" = 글로벌 랜덤 (targetCountry=null)
+// "나라 골라 만나기" = 인증 멤버 전용 → 특정 나라
+
+// 나라 선택 화면 렌더링
+function renderCountryPick(filter=''){
+  const list=document.getElementById('countryPickList');
+  const f=filter.trim().toLowerCase();
+  const entries=Object.keys(countryNameMap).filter(code=>{
+    if(!f) return true;
+    return countryNameMap[code].includes(f) || code.toLowerCase().includes(f);
+  });
+  list.innerHTML=entries.map(code=>`
+    <div class="cpick-row" data-val="${code}" style="display:flex;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid var(--border);cursor:pointer;">
+      <span style="font-size:26px;">${flagMap[code]}</span>
+      <span style="font-size:16px;font-weight:600;">${countryNameMap[code]}</span>
+    </div>`).join('');
+  list.querySelectorAll('.cpick-row').forEach(el=>{
+    el.addEventListener('click', async()=>{
+      targetCountry=el.dataset.val;
+      try{
+        await ensureStream();
+        await getCameras();
+        startMatch();
+      }catch(e){ toast(t('t_cam')); }
+    });
+  });
+}
+
+// "나라 골라 만나기" 버튼 → 인증 멤버만
+document.getElementById('pickCountryBtn').addEventListener('click', async()=>{
+  const{data:me}=await db.from('users').select('is_premium').eq('user_id',userId).maybeSingle();
+  if(me?.is_premium){
+    renderCountryPick();
+    show('countryPick');
+  } else {
+    // 무료 사용자 → 인증 멤버 안내
+    goPremium();
+  }
+});
+
+document.getElementById('countrySearch').addEventListener('input',e=>renderCountryPick(e.target.value));
+
+// 카메라/마이크 스트림을 한 번만 얻어서 재사용 (iOS 권한 반복요청 방지)
+async function ensureStream(){
+  // 이미 살아있는 스트림이 있으면 재사용
+  if(localStream && localStream.getVideoTracks().some(t=>t.readyState==='live')){
+    return localStream;
+  }
+  localStream=await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:'user'},
+    audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1,sampleRate:16000}
+  });
+  return localStream;
+}
+
+document.getElementById('connectBtn').addEventListener('click', async()=>{
+  // 글로벌 랜덤 매칭 (나라 지정 안 함)
+  targetCountry=null;
+  try{
+    await ensureStream();
+    await getCameras();
+    startMatch();
+  }catch(e){
+    toast(t('t_cam'));
+  }
+});
+document.getElementById('cancelBtn').addEventListener('click',cancelMatch);
+
+// 광고 카운트다운 (애드몹 자리 - 지금은 자체 홍보)
+let adTimer=null; // (구버전 호환용 - 매칭/통화 진입 시 clearInterval 안전장치)
+
+// 인증 멤버 구독 카드 - 닫기 (이번 세션 동안 다시 안 뜸)
+let matchPremiumDismissed=false;
+function dismissMatchPremium(){
+  matchPremiumDismissed=true;
+  document.getElementById('matchPremiumCard').style.display='none';
+}
+
+// 프리미엄 결제 (인증 멤버 · 우선 매칭권)
+// 출시 후 Google Play 결제(Play Billing)를 여기 연결.
+// 결제 성공 시: db.from('users').update({is_premium:true}).eq('user_id',userId)
+function goPremium(){
+  toast(t('t_member_soon'));
+}
+
+async function startMatch(){
+  show('matching');
+  const savedCountry=localStorage.getItem('rgeo_country')||'KR';
+  // 글로벌 랜덤이면 "전 세계", 나라 지정이면 그 나라
+  document.getElementById('matchInfo').textContent = targetCountry
+    ? `${flagMap[targetCountry]||''} ${countryNameMap[targetCountry]||targetCountry}`
+    : '🌍 '+t('match_global');
+  showDemandCards();
+
+  // 프리미엄(인증 멤버) 여부 확인
+  const{data:me}=await db.from('users').select('is_premium,age_group').eq('user_id',userId).maybeSingle();
+  const isPremium=me?.is_premium||false;
+
+  // 인증 멤버가 아니고, 이번 매칭에서 카드를 닫지 않았으면 구독 카드 노출
+  const card=document.getElementById('matchPremiumCard');
+  if(!isPremium && !matchPremiumDismissed){
+    card.style.display='block';
+  } else {
+    card.style.display='none';
+  }
+
+  // 내 나이대 (또래 우선 매칭용)
+  const myAge=me?.age_group||null;
+
+  // 내 정보 매칭 풀에 등록 (target_country: 글로벌이면 ANY)
+  await db.from('matching_pool').upsert({
+    user_id:userId,
+    my_lang:myLang,
+    my_country:savedCountry,
+    target_country:targetCountry||'ANY',
+    status:'waiting',
+    is_premium:isPremium,
+    age_group:myAge,
+    created_at:new Date().toISOString()
+  });
+
+  // 차단 목록
+  const blocked=JSON.parse(localStorage.getItem('rgeo_blocked')||'[]');
+
+  // 밴된 사용자 목록
+  const{data:bannedUsers}=await db.from('users').select('user_id').eq('banned',true);
+  const bannedIds=(bannedUsers||[]).map(u=>u.user_id);
+
+  // 상대 찾기 (2분 이상 된 유령 대기자 제외)
+  const twoMinAgo=new Date(Date.now()-2*60*1000).toISOString();
+  let query=db.from('matching_pool')
+    .select('*')
+    .eq('status','waiting')
+    .neq('user_id',userId)
+    .gte('created_at',twoMinAgo);
+
+  // 나라를 지정했으면 그 나라 사람만, 글로벌이면 누구나
+  if(targetCountry){
+    query=query.eq('my_country',targetCountry);
+  }
+
+  let{data:matches}=await query
+    .order('is_premium',{ascending:false})
+    .order('created_at',{ascending:true})
+    .limit(20);
+
+  // 차단·밴 제외한 후보들
+  let candidates=(matches||[]).filter(m=>!blocked.includes(m.user_id) && !bannedIds.includes(m.user_id));
+
+  // 정렬: 인증 멤버끼리 우선 연결 + 또래 우선
+  const ageNum={'40s':40,'50s':50,'60s+':60};
+  const myAgeN=ageNum[myAge]||50;
+  candidates.sort((a,b)=>{
+    // 1순위: 내가 인증 멤버면 인증 멤버를 먼저 (인증끼리 신뢰 연결)
+    //         내가 무료여도 인증 멤버가 약간 우선 (기존 정책 유지)
+    if(a.is_premium!==b.is_premium){
+      return b.is_premium ? 1 : -1;
+    }
+    // 2순위: 또래(나이 가까운 순)
+    const da=Math.abs((ageNum[a.age_group]||50)-myAgeN);
+    const db2=Math.abs((ageNum[b.age_group]||50)-myAgeN);
+    if(da!==db2) return da-db2;
+    // 3순위: 오래 기다린 순
+    return new Date(a.created_at)-new Date(b.created_at);
+  });
+
+  // 후보를 하나씩 시도 - 충돌 방지 (양방향 낙관적 잠금)
+  let matched=null;
+  for(const cand of candidates){
+    const newRoom=crypto.randomUUID();
+    // 1) 상대가 '아직 waiting일 때만' 잡기
+    const{data:claimed}=await db.from('matching_pool')
+      .update({status:'matched',room_id:newRoom})
+      .eq('user_id',cand.user_id)
+      .eq('status','waiting')   // 상대가 waiting인 경우에만
+      .select();
+    if(claimed && claimed.length>0){
+      // 2) 나도 '아직 waiting일 때만' matched로 (그 사이 누가 날 잡았을 수 있음)
+      const{data:meClaimed}=await db.from('matching_pool')
+        .update({status:'matched',room_id:newRoom})
+        .eq('user_id',userId)
+        .eq('status','waiting')
+        .select();
+      if(meClaimed && meClaimed.length>0){
+        // 양쪽 다 성공 → 매칭 확정
+        matched={partner:cand, room:newRoom};
+        break;
+      } else {
+        // 내가 이미 다른 사람한테 잡혔음 → 방금 잡은 상대를 waiting으로 되돌림 (롤백)
+        await db.from('matching_pool').update({status:'waiting',room_id:null}).eq('user_id',cand.user_id).eq('room_id',newRoom);
+        // 나는 이미 matched 상태 → 그 방으로 들어가기 위해 대기 리스너로
+        break;
+      }
+    }
+    // 실패하면 다음 후보 시도
+  }
+
+  if(matched){
+    startCall(matched.room,true,matched.partner);
+    return;
+  }
+
+  // 매칭 못 찾음 → 대기 모드
+  // partner 정보를 안전하게 가져오는 헬퍼 (상대 정보가 늦게 들어올 수 있어 재시도)
+  async function fetchPartnerByRoom(roomId, tries=3){
+    for(let i=0;i<tries;i++){
+      const{data:partner}=await db.from('matching_pool').select('*').eq('room_id',roomId).neq('user_id',userId).maybeSingle();
+      if(partner) return partner;
+      await new Promise(r=>setTimeout(r,300));
+    }
+    return null;
+  }
+
+  let matchHandled=false;
+  async function enterMatchedRoom(roomId){
+    if(matchHandled) return;
+    matchHandled=true;
+    matchCh?.unsubscribe();
+    clearInterval(matchPoll);
+    clearTimeout(matchTimeout);
+    const partner=await fetchPartnerByRoom(roomId);
+    startCall(roomId,false,partner);
+  }
+
+  // 1) Realtime 리스너 - 상대가 나를 잡으면 즉시 반응
+  matchCh=db.channel('match_'+userId).on('postgres_changes',{event:'UPDATE',schema:'public',table:'matching_pool',filter:`user_id=eq.${userId}`},async p=>{
+    if(p.new.status==='matched' && p.new.room_id){
+      enterMatchedRoom(p.new.room_id);
+    }
+  }).subscribe();
+
+  // 2) 폴링 백업 - Realtime 이벤트를 놓쳐도 2초마다 내 상태 직접 확인
+  clearInterval(matchPoll);
+  matchPoll=setInterval(async()=>{
+    const{data:meRow}=await db.from('matching_pool').select('status,room_id').eq('user_id',userId).maybeSingle();
+    if(meRow?.status==='matched' && meRow.room_id){
+      enterMatchedRoom(meRow.room_id);
+    } else if(!meRow){
+      // 내 행이 사라짐 (비정상) → 재등록을 위해 정리
+      clearInterval(matchPoll);
+    }
+  },2000);
+
+  // 3) 즉시 한 번 더 확인 (리스너 구독 직전에 누가 날 잡았을 수 있음)
+  const{data:meNow}=await db.from('matching_pool').select('status,room_id').eq('user_id',userId).maybeSingle();
+  if(meNow?.status==='matched' && meNow.room_id){
+    enterMatchedRoom(meNow.room_id);
+    return;
+  }
+
+  // 4) 타임아웃 - 25초 동안 못 만나면 다시 시도 (대기자 갱신)
+  clearTimeout(matchTimeout);
+  matchTimeout=setTimeout(async()=>{
+    if(matchHandled) return;
+    matchCh?.unsubscribe();
+    clearInterval(matchPoll);
+    // 아직 매칭 화면이면 재시도
+    if(document.getElementById('matching')?.classList.contains('on')){
+      startMatch(); // 풀 갱신하며 재시도
+    }
+  },25000);
+}
+
+async function startCall(room,isInit,partner){
+  roomId=room;clearInterval(adTimer);clearInterval(matchPoll);clearTimeout(matchTimeout);show('call');
+  lastPartnerId=partner?.user_id||null;
+  lastPartnerCountry=partner?.my_country||partner?.target_country||null;
+
+  // 상대방 프로필 정보 가져오기 (닉네임·사진·프리미엄)
+  let peerProfile=null;
+  if(partner?.user_id){
+    const{data}=await db.from('users').select('nickname,avatar_url,my_country,is_premium').eq('user_id',partner.user_id).maybeSingle();
+    peerProfile=data;
+  }
+  const peerCountry=peerProfile?.my_country||partner?.my_country||null;
+
+  // 현재 통화 상대 정보 저장 (친구 추가용)
+  currentPeer={
+    user_id:partner?.user_id||null,
+    nickname:peerProfile?.nickname||null,
+    country:peerCountry,
+    avatar:peerProfile?.avatar_url||null
+  };
+  // 친구 추가 버튼 초기화 (이미 친구면 표시)
+  resetFriendButton(partner?.user_id);
+
+  // 이름 (닉네임 있으면 닉네임, 없으면 나라명)
+  document.getElementById('peerNameText').textContent=peerProfile?.nickname||countryNameMap[peerCountry]||'친구';
+  document.getElementById('peerLang').textContent=peerCountry?`${countryNameMap[peerCountry]||''} 친구`:'친구';
+
+  // 국기 배지
+  document.getElementById('peerFlagBadge').textContent=flagMap[peerCountry]||'🌍';
+
+  // 인증마크 (프리미엄)
+  document.getElementById('peerVerify').style.display=peerProfile?.is_premium?'block':'none';
+
+  // 상대방 프로필 사진
+  if(peerProfile?.avatar_url){
+    document.getElementById('callAvatar').src=peerProfile.avatar_url;
+    document.getElementById('callAvatar').style.display='block';
+    document.getElementById('callAvatarFallback').style.display='none';
+  } else {
+    document.getElementById('callAvatar').style.display='none';
+    document.getElementById('callAvatarFallback').style.display='flex';
+    document.getElementById('callAvatarFallback').textContent=flagMap[peerCountry]||'🌍';
+  }
+  timerSec=0;timerIv=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);
+  await ensureStream();
+  document.getElementById('localVideo').srcObject=localStream;
+  document.getElementById('localVideo').classList.remove('pip');
+  document.getElementById('waitingOverlay').style.display='flex';
+  document.getElementById('remoteVideo').style.opacity='0';
+  pc=new RTCPeerConnection({iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+    {urls:'stun:stun2.l.google.com:19302'},
+    {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
+  ],iceCandidatePoolSize:10});
+  localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+
+  // ICE candidate 큐 (remoteDescription 설정 전에 도착한 것 보관)
+  let pendingCandidates=[];
+  let remoteSet=false;
+
+  // 연결 상태 감지 - 상대가 끊기면 자동 종료
+  pc.onconnectionstatechange=()=>{
+    console.log('연결 상태:', pc.connectionState);
+    if(pc.connectionState==='disconnected' || pc.connectionState==='failed'){
+      setTimeout(()=>{
+        if(pc && (pc.connectionState==='disconnected'||pc.connectionState==='failed'||pc.connectionState==='closed')){
+          handlePeerDisconnect();
+        }
+      },3000);
+    }
+  };
+  pc.oniceconnectionstatechange=()=>{
+    if(pc.iceConnectionState==='failed'){
+      // 실패 시 ICE 재시작 시도
+      try{ pc.restartIce(); }catch(e){}
+      setTimeout(()=>{ if(pc && pc.iceConnectionState==='failed') handlePeerDisconnect(); },4000);
+    }
+  };
+
+  pc.ontrack=e=>{
+    const remote=document.getElementById('remoteVideo');
+    remote.srcObject=e.streams[0];
+    setTimeout(()=>{
+      remote.style.opacity='1';
+      const local=document.getElementById('localVideo');
+      local.classList.add('pip');
+      local.style.cursor='grab';
+      document.getElementById('waitingOverlay').style.display='none';
+      initDraggable();
+    },300);
+  };
+
+  callCh=db.channel('call_'+roomId);
+
+  // ICE candidate 생기면 전송 (큐 안전장치 포함)
+  pc.onicecandidate=e=>{
+    if(e.candidate && callCh){
+      callCh.send({type:'broadcast',event:'ice',payload:{c:e.candidate,f:userId}});
+    }
+  };
+
+  // 큐에 쌓인 ICE candidate를 한꺼번에 추가
+  async function flushCandidates(){
+    remoteSet=true;
+    for(const c of pendingCandidates){
+      try{ await pc.addIceCandidate(c); }catch(e){console.warn('ICE 추가 실패',e);}
+    }
+    pendingCandidates=[];
+  }
+
+  callCh
+    .on('broadcast',{event:'offer'},async({payload:p})=>{
+      if(p.f===userId)return;
+      try{
+        await pc.setRemoteDescription(p.o);
+        await flushCandidates();
+        const a=await pc.createAnswer();
+        await pc.setLocalDescription(a);
+        callCh.send({type:'broadcast',event:'answer',payload:{a,f:userId}});
+      }catch(e){console.error('offer 처리 실패',e);}
+    })
+    .on('broadcast',{event:'answer'},async({payload:p})=>{
+      if(p.f===userId)return;
+      try{
+        await pc.setRemoteDescription(p.a);
+        await flushCandidates();
+      }catch(e){console.error('answer 처리 실패',e);}
+    })
+    .on('broadcast',{event:'ice'},async({payload:p})=>{
+      if(p.f===userId)return;
+      // remoteDescription 설정 전이면 큐에 보관
+      if(remoteSet){
+        try{ await pc.addIceCandidate(p.c); }catch(e){console.warn('ICE 추가 실패',e);}
+      } else {
+        pendingCandidates.push(p.c);
+      }
+    })
+    .on('broadcast',{event:'subtitle'},({payload:p})=>{if(p.from===userId)return;showPeerSubtitle(p.text);})
+    .on('broadcast',{event:'ready'},async({payload:p})=>{
+      if(p.f===userId)return;
+      // 상대가 준비됐다고 알리면, init쪽이 offer 보냄 (타이밍 보장)
+      if(isInit){
+        const o=await pc.createOffer();
+        await pc.setLocalDescription(o);
+        callCh.send({type:'broadcast',event:'offer',payload:{o,f:userId}});
+      }
+    })
+    .on('broadcast',{event:'end'},()=>endCall())
+    .subscribe(async(status)=>{
+      if(status!=='SUBSCRIBED')return;
+      // 구독 완료 후: answer쪽은 "준비됨" 신호, init쪽도 offer 보냄(이중 안전장치)
+      if(isInit){
+        // init은 약간 기다렸다가 offer (상대 구독 시간 확보)
+        setTimeout(async()=>{
+          if(!pc || pc.signalingState==='closed')return;
+          const o=await pc.createOffer();
+          await pc.setLocalDescription(o);
+          callCh.send({type:'broadcast',event:'offer',payload:{o,f:userId}});
+        },800);
+      } else {
+        // answer쪽은 준비됐다고 알림 → init이 offer 보냄
+        callCh.send({type:'broadcast',event:'ready',payload:{f:userId}});
+      }
+    });
+
+  // STT 시작 - 언어는 '나라' 기준으로 정확히 결정
+  const savedCountry=localStorage.getItem('rgeo_country')||'KR';
+  const myLangCode=countryToLang[savedCountry]||'ko';        // 내 나라 → 내 언어
+  const peerLangCode=countryToLang[partner?.my_country]||'en'; // 상대 나라 → 상대 언어
+  // 같은 언어면 번역 끄기
+  const needTranslation=myLangCode!==peerLangCode;
+  // 언어 설정 보관 (자막 켤 때 사용)
+  _sttLangs={my:myLangCode, peer:needTranslation?peerLangCode:myLangCode};
+  // 자막 버튼 OFF 상태로 초기화 (기본 꺼짐)
+  document.getElementById('subBtn').classList.toggle('off',!subtitleOn);
+  document.getElementById('mySubtitle').style.display='none';
+  document.getElementById('peerSubtitle').style.display='none';
+  // 자막이 켜져 있을 때만 STT 시작 (기본 OFF라 메시지·비용 절약)
+  if(subtitleOn){
+    startMySTT(localStream, _sttLangs.my, _sttLangs.peer, false);
+  }
+}
+
+function toggleMute(){isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);document.getElementById('muteBtn').classList.toggle('off',isMuted);}
+function toggleCam(){isCamOff=!isCamOff;localStream?.getVideoTracks().forEach(t=>t.enabled=!isCamOff);document.getElementById('camBtn').classList.toggle('off',isCamOff);}
+
+let isFrontCam=true;
+
+async function getCameras(){
+  const devices=await navigator.mediaDevices.enumerateDevices();
+  cameraDevices=devices.filter(d=>d.kind==='videoinput');
+}
+
+async function switchCam(){
+  if(!localStream||cameraDevices.length<2)return;
+  isFrontCam=!isFrontCam;
+  try{
+    // 기존 오디오 트랙 유지, 비디오만 교체
+    const audioTrack=localStream.getAudioTracks()[0];
+    localStream.getVideoTracks().forEach(t=>t.stop());
+
+    const idx=isFrontCam?0:cameraDevices.length-1;
+    const newVideoStream=await navigator.mediaDevices.getUserMedia({
+      video:{deviceId:{exact:cameraDevices[idx].deviceId}},
+      audio:false // 오디오 새로 요청 안 해요
+    });
+
+    const newVideoTrack=newVideoStream.getVideoTracks()[0];
+
+    // 기존 스트림에 새 비디오 트랙 합치기
+    const newStream=new MediaStream([newVideoTrack, audioTrack].filter(Boolean));
+    document.getElementById('localVideo').srcObject=newStream;
+
+    if(pc){
+      const sender=pc.getSenders().find(s=>s.track?.kind==='video');
+      if(sender) await sender.replaceTrack(newVideoTrack);
+    }
+    localStream=newStream;
+  }catch(e){
+    isFrontCam=!isFrontCam;
+    console.error('카메라 전환 실패',e);
+  }
+}
+async function confirmEndCall(){
+  const ok=await showConfirm(t('end_call_q'));
+  if(ok) endCall();
+}
+
+// 다음 사람으로 넘기기 (스와이프 / 다음 버튼)
+// ===== 친구 기능 =====
+let currentPeer=null; // 현재 통화 상대
+
+// 친구 추가 버튼 상태 초기화 (이미 친구인지 확인)
+async function resetFriendButton(peerId){
+  const icon=document.getElementById('addFriendIcon');
+  if(!icon||!peerId)return;
+  icon.setAttribute('fill','none');
+  const{data}=await db.from('friends').select('id').eq('user_id',userId).eq('friend_id',peerId).maybeSingle();
+  if(data){ icon.setAttribute('fill','#FF6B4A'); } // 이미 친구면 채워진 하트
+}
+
+// 현재 통화 상대를 친구로 추가
+async function addCurrentFriend(){
+  if(!currentPeer||!currentPeer.user_id){ toast(t('t_friend_loading')); return; }
+  const icon=document.getElementById('addFriendIcon');
+  // 이미 친구면 안내
+  const{data:exist}=await db.from('friends').select('id').eq('user_id',userId).eq('friend_id',currentPeer.user_id).maybeSingle();
+  if(exist){ toast(t('t_already')); return; }
+  // 친구 추가
+  const{error}=await db.from('friends').insert({
+    user_id:userId,
+    friend_id:currentPeer.user_id,
+    friend_nickname:currentPeer.nickname,
+    friend_country:currentPeer.country,
+    friend_avatar:currentPeer.avatar
+  });
+  if(error){ toast(t('t_friend_fail')); console.error(error); return; }
+  if(icon) icon.setAttribute('fill','#FF6B4A');
+  toast(t('t_added'));
+}
+
+// 친구 목록 페이지 열기
+async function openFriends(){
+  show('friends');
+  const list=document.getElementById('friendsList');
+  list.innerHTML='<div style="text-align:center;color:var(--ink3);padding:40px 0;">'+t('loading')+'</div>';
+
+  const{data:friends}=await db.from('friends').select('*').eq('user_id',userId).order('created_at',{ascending:false});
+  if(!friends||friends.length===0){
+    list.innerHTML='<div style="text-align:center;color:var(--ink2);padding:60px 20px;line-height:1.6;">'+t('no_friends')+'<br>'+t('add_friend_hint').replace(/\n/g,'<br>')+'</div>';
+    return;
+  }
+
+  // 친구들의 온라인 상태 확인 (최근 2분 내 활동 = 온라인)
+  const ids=friends.map(f=>f.friend_id);
+  const{data:statuses}=await db.from('users').select('user_id,last_active,nickname,avatar_url,my_country').in('user_id',ids);
+  const statusMap={};
+  (statuses||[]).forEach(s=>{ statusMap[s.user_id]=s; });
+  const now=Date.now();
+
+  list.innerHTML='';
+  friends.forEach(f=>{
+    const s=statusMap[f.friend_id]||{};
+    const online = s.last_active && (now-new Date(s.last_active).getTime())<2*60*1000;
+    const nick=s.nickname||f.friend_nickname||'친구';
+    const country=s.my_country||f.friend_country;
+    const avatar=s.avatar_url||f.friend_avatar;
+    const flag=flagMap[country]||'🌍';
+
+    const el=document.createElement('div');
+    el.style.cssText='display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:10px;';
+    el.innerHTML=`
+      <div style="position:relative;width:48px;height:48px;flex-shrink:0;">
+        <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center;font-size:22px;">
+          ${avatar?`<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;">`:flag}
+        </div>
+        <div style="position:absolute;bottom:0;right:0;width:14px;height:14px;border-radius:50%;border:2px solid var(--card);background:${online?'#22c55e':'#bbb'};"></div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:16px;font-weight:700;">${nick} <span style="font-size:13px;">${flag}</span></div>
+        <div style="font-size:13px;color:${online?'#22c55e':'var(--ink3)'};font-weight:600;">${online?'● '+t('online'):t('offline')}</div>
+      </div>
+      ${online?`<button onclick="callFriend('${f.friend_id}','${(nick||'').replace(/'/g,'')}')" style="padding:10px 16px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">'+t('call_friend')+'</button>`:`<button onclick="deleteFriend('${f.friend_id}')" style="padding:8px 12px;background:transparent;color:var(--ink3);border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:12px;cursor:pointer;">'+t('delete')+'</button>`}
+    `;
+    list.appendChild(el);
+  });
+}
+
+// 친구 삭제
+async function deleteFriend(friendId){
+  const ok=await showConfirm(t('delete_friend_q'));
+  if(!ok)return;
+  await db.from('friends').delete().eq('user_id',userId).eq('friend_id',friendId);
+  openFriends();
+}
+
+// 온라인 친구에게 영상 걸기
+let friendCallPending=null;
+async function callFriend(friendId, nick){
+  if(callCh||pc){ toast(t('t_busy_self')); return; }
+  if(friendCallPending){ return; }
+
+  const room='friend_'+crypto.randomUUID();
+  const myNick=await getMyNick();
+  let answered=false;
+
+  // 내 invite 채널로 상대의 응답(수락/거절/부재)을 듣는다
+  const respCh=db.channel('invite_'+userId);
+  respCh
+    .on('broadcast',{event:'friend_accept'},async({payload:p})=>{
+      if(answered||p.from!==friendId)return;
+      answered=true;
+      cleanup();
+      await ensureStream();
+      startCall(p.room||room, true, {user_id:friendId}); // 내가 init
+    })
+    .on('broadcast',{event:'friend_reject'},({payload:p})=>{
+      if(answered||p.from!==friendId)return;
+      answered=true; cleanup();
+      toast(nick+t('t_reject'));
+    })
+    .on('broadcast',{event:'friend_busy'},({payload:p})=>{
+      if(answered||p.from!==friendId)return;
+      answered=true; cleanup();
+      toast(nick+t('t_busy'));
+    })
+    .subscribe();
+
+  toast(nick+t('t_calling'));
+
+  // 상대 invite 채널로 호출 신호를 여러 번 보낸다 (broadcast 놓침 방지)
+  const inviteCh=db.channel('invite_'+friendId);
+  await inviteCh.subscribe();
+  let tries=0;
+  const ring=setInterval(()=>{
+    tries++;
+    if(answered||tries>10){ clearInterval(ring); return; }
+    inviteCh.send({type:'broadcast',event:'friend_call',payload:{from:userId,fromNick:myNick,room}});
+  },1500);
+  inviteCh.send({type:'broadcast',event:'friend_call',payload:{from:userId,fromNick:myNick,room}});
+
+  // 20초 타임아웃
+  const to=setTimeout(()=>{
+    if(answered)return;
+    cleanup();
+    toast(nick+t('t_no_answer'));
+  },20000);
+
+  function cleanup(){
+    clearInterval(ring); clearTimeout(to);
+    try{ inviteCh.unsubscribe(); }catch(e){}
+    try{ respCh.unsubscribe(); }catch(e){}
+    friendCallPending=null;
+  }
+  friendCallPending={cleanup};
+}
+
+async function getMyNick(){
+  const{data}=await db.from('users').select('nickname').eq('user_id',userId).maybeSingle();
+  return data?.nickname||'친구';
+}
+
+// 온라인 상태 유지 - 앱 켜져 있는 동안 1분마다 last_active 갱신
+let heartbeatIv=null;
+function startHeartbeat(){
+  if(heartbeatIv)return;
+  const beat=async()=>{
+    if(userId){
+      try{ await db.from('users').update({last_active:new Date().toISOString()}).eq('user_id',userId); }catch(e){}
+    }
+  };
+  beat();
+  heartbeatIv=setInterval(beat,60*1000); // 1분마다
+  // 화면 다시 보일 때 즉시 갱신
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) beat(); });
+}
+
+// 친구가 거는 영상 호출 받기
+let friendCallCh=null;
+function setupFriendCallListener(){
+  if(friendCallCh)return;
+  friendCallCh=db.channel('invite_'+userId);
+  friendCallCh
+    .on('broadcast',{event:'friend_call'},async({payload:p})=>{
+      if(!p||p.from===userId)return;
+      // 통화 중이면 자동 거절 신호
+      if(callCh||pc){
+        try{
+          const busyCh=db.channel('invite_'+p.from);
+          await busyCh.subscribe();
+          busyCh.send({type:'broadcast',event:'friend_busy',payload:{from:userId}});
+          setTimeout(()=>busyCh.unsubscribe(),500);
+        }catch(e){}
+        return;
+      }
+      const ok=await showConfirm((p.fromNick||t('friend'))+t('call_incoming'));
+      if(ok){
+        // 수락 신호 보내고 (거는 쪽이 기다리는 걸 멈추게)
+        try{
+          const accCh=db.channel('invite_'+p.from);
+          await accCh.subscribe();
+          accCh.send({type:'broadcast',event:'friend_accept',payload:{from:userId,room:p.room}});
+          setTimeout(()=>accCh.unsubscribe(),500);
+        }catch(e){}
+        // 상대가 init이므로 나는 answer쪽
+        await ensureStream();
+        startCall(p.room, false, {user_id:p.from});
+      } else {
+        // 거절 신호
+        try{
+          const rejCh=db.channel('invite_'+p.from);
+          await rejCh.subscribe();
+          rejCh.send({type:'broadcast',event:'friend_reject',payload:{from:userId}});
+          setTimeout(()=>rejCh.unsubscribe(),500);
+        }catch(e){}
+      }
+    })
+    .subscribe();
+}
+
+
+let nexting=false;
+async function nextMatch(){
+  if(nexting||callEnding)return;
+  nexting=true;
+  // 현재 상대에게 종료 신호
+  if(callCh){ try{ callCh.send({type:'broadcast',event:'end',payload:{}}); }catch(e){} }
+  // 통화만 정리 (카메라 스트림은 유지 → 끊김 없이 바로 다음)
+  stopSTT();
+  clearInterval(timerIv);
+  pc?.close();pc=null;
+  callCh?.unsubscribe();callCh=null;
+  toast(t('t_next'));
+  // 바로 다음 매칭
+  await startMatch();
+  nexting=false;
+}
+
+let callEnding=false;
+async function endCall(){
+  if(callEnding)return;
+  callEnding=true;
+  if(callCh) callCh?.send({type:'broadcast',event:'end',payload:{}});
+  const secs=timerSec;
+  cleanupCall();
+  showResult(secs);
+  callEnding=false;
+}
+
+// 상대방 연결 끊김 처리
+async function handlePeerDisconnect(){
+  if(callEnding)return;
+  callEnding=true;
+  const secs=timerSec;
+  toast(t('t_disconnected'));
+  cleanupCall();
+  showResult(secs);
+  callEnding=false;
+}
+
+async function showResult(callSecs){
+  // 화면 즉시 전환
+  document.getElementById('resultTitle').textContent=callSecs<MIN_CALL_SEC?t('result_short'):t('result_good');
+  const mins=Math.floor(callSecs/60);
+  const secs=callSecs%60;
+  document.getElementById('resultDesc').textContent=callSecs<MIN_CALL_SEC?'다시 새로운 친구를 만나볼까요?':`${mins>0?mins+'분 '+secs+'초':secs+'초'} 동안 함께했어요`;
+  document.getElementById('resultEmoji').textContent='👋';
+  document.getElementById('premiumCard').style.display='none';
+  document.getElementById('usageCard').style.display='none';
+  document.getElementById('usageBar').style.width='0%';
+  document.getElementById('usageText').textContent='계산 중...';
+  // 별점 초기화
+  selectedRating=0;
+  document.querySelectorAll('.star').forEach(s=>{s.style.filter='grayscale(1)';s.style.opacity='.4';s.style.transform='scale(1)';});
+  show('result');
+
+  // DB는 백그라운드에서
+  try {
+    let totalSecs=0;
+    if(callSecs>=MIN_CALL_SEC) totalSecs=await saveUsage(callSecs);
+    else { const{seconds}=await getDailyUsage(); totalSecs=seconds; }
+    const pct=Math.min((totalSecs/FREE_LIMIT)*100,100);
+    document.getElementById('usageBar').style.width=pct+'%';
+    document.getElementById('usageBar').style.background='var(--blue)';
+    document.getElementById('usageText').textContent=`${Math.floor(totalSecs/60)} / 10분`;
+    if(totalSecs>=FREE_LIMIT){
+      document.getElementById('usageCard').style.display='block';
+      document.getElementById('premiumCard').style.display='block';
+    }
+    // 통화 기록 저장 (30초 이상만)
+    if(callSecs>=MIN_CALL_SEC){
+      const{data}=await db.from('calls').insert({
+        user_id:userId,
+        partner_country:lastPartnerCountry||null,
+        duration_seconds:callSecs,
+        created_at:new Date().toISOString()
+      }).select().single();
+      lastCallId=data?.id||null;
+    }
+  } catch(e){ document.getElementById('usageText').textContent=''; }
+}
+async function showDemandCards(){
+  const countryNames={KR:'한국',JP:'일본',US:'미국',VN:'베트남',ID:'인도네시아'};
+
+  // 실시간 DB에서 대기 중인 사람들 나라별 카운트 (실제 숫자만)
+  const {data} = await db.from('matching_pool').select('my_country').eq('status','waiting');
+  const counts={};
+  (data||[]).forEach(r=>{
+    if(r.my_country) counts[r.my_country]=(counts[r.my_country]||0)+1;
+  });
+
+  const container=document.getElementById('demandCards');
+  container.innerHTML='';
+
+  const waiting=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+
+  // 아무도 없으면 정직하게 안내 (허수 없음)
+  if(waiting.length===0){
+    const el=document.createElement('div');
+    el.className='demand-card';
+    el.style.justifyContent='center';
+    el.innerHTML=`<div class="demand-text" style="text-align:center;color:var(--ink2);">${t('matching')}...</div>`;
+    container.appendChild(el);
+    return;
+  }
+
+  // 실제 대기자 있는 나라만 표시
+  waiting.slice(0,3).forEach(([c,cnt],i)=>{
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className='demand-card';
+      el.innerHTML=`<div class="demand-flag">${flagMap[c]||'🌍'}</div><div class="demand-text"><b>${countryNames[c]||c}</b> 친구가 기다려요</div><div class="demand-count">${cnt}명</div>`;
+      container.appendChild(el);
+    },i*300);
+  });
+}
+
+const DEEPGRAM_KEY='7d034d27e9049c04af2cace8a0a4aa2c41a797e9';
+const DEEPL_KEY='26a7c19c-cabc-42d2-bcc7-9cefda7ff2f2:fx';
+
+let myDgSocket=null;
+let peerDgSocket=null;
+let subtitleTimeout=null;
+let peerSubtitleTimeout=null;
+
+async function translateText(text, sourceLang, targetLang){
+  if(sourceLang===targetLang) return text;
+  try{
+    // MyMemory - API 키 불필요, CORS 허용, 무료
+    const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`);
+    const data=await res.json();
+    const translated=data.responseData?.translatedText;
+    if(translated && !translated.includes('MYMEMORY WARNING')) return translated;
+    return text;
+  }catch(e){
+    console.error('번역 실패',e);
+    return text;
+  }
+}
+
+let subtitleOn=false;  // 기본 OFF (메시지·STT 비용 절약, 원하는 사람만 켬)
+let _sttLangs=null;    // 현재 통화의 언어 설정 보관 (자막 켤 때 STT 시작용)
+function toggleSubtitle(){
+  subtitleOn=!subtitleOn;
+  document.getElementById('subBtn').classList.toggle('off',!subtitleOn);
+  if(subtitleOn){
+    // 자막 켜기 → STT 시작
+    if(_sttLangs && localStream){
+      startMySTT(localStream, _sttLangs.my, _sttLangs.peer, false);
+    }
+    toast(t('sub')+' ✓');
+  } else {
+    // 자막 끄기 → STT 정지 + 화면 숨김 (메시지 전송 중단)
+    stopSTT();
+    document.getElementById('mySubtitle').style.display='none';
+    document.getElementById('peerSubtitle').style.display='none';
+    toast(t('sub')+' ✕');
+  }
+}
+
+function showMySubtitle(text){
+  if(!subtitleOn)return;
+  const el=document.getElementById('mySubtitle');
+  document.getElementById('mySubtitleText').textContent=text;
+  el.style.display='block';
+  clearTimeout(subtitleTimeout);
+  subtitleTimeout=setTimeout(()=>el.style.display='none',4000);
+}
+
+function showPeerSubtitle(text){
+  if(!subtitleOn)return;
+  const el=document.getElementById('peerSubtitle');
+  document.getElementById('peerSubtitleText').textContent=text;
+  el.style.display='block';
+  clearTimeout(peerSubtitleTimeout);
+  // 길이에 따라 표시 시간 조절 (글자당 약 90ms, 최소 3초 최대 8초)
+  const dur=Math.min(Math.max(text.length*90,3000),8000);
+  peerSubtitleTimeout=setTimeout(()=>el.style.display='none',dur);
+}
+
+function startMySTT(stream, myLangCode, peerLangCode, isTestMode=false, model='nova-3'){
+  stopSTT();
+  sttActive=true;
+
+  // 오디오 트랙만 따로 추출
+  const audioTrack=stream.getAudioTracks()[0];
+  if(!audioTrack){console.error('오디오 트랙 없음');return;}
+  const audioStream=new MediaStream([audioTrack]);
+
+  const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':
+    MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
+    MediaRecorder.isTypeSupported('audio/ogg')?'audio/ogg':
+    MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
+
+  console.log('STT 시작 - 모델:', model, '언어:', myLangCode, '→', peerLangCode);
+
+  const ws=new WebSocket(
+    `wss://api.deepgram.com/v1/listen?model=${model}&language=${myLangCode}&punctuate=true&interim_results=true&endpointing=400&utterance_end_ms=1200&vad_events=true&smart_format=true`,
+    ['token', DEEPGRAM_KEY]
+  );
+
+  let opened=false;
+  ws.onopen=()=>{
+    opened=true;
+    console.log('Deepgram 연결됨 ('+model+')');
+    try{
+      const opts=mimeType?{mimeType}:{};
+      const recorder=new MediaRecorder(audioStream, opts);
+      recorder.ondataavailable=e=>{
+        if(ws.readyState===WebSocket.OPEN && e.data?.size>0) ws.send(e.data);
+      };
+      recorder.start(150);
+      ws._recorder=recorder;
+      // KeepAlive - 8초마다 연결 유지
+      ws._keepalive=setInterval(()=>{
+        if(ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({type:'KeepAlive'}));
+      },8000);
+    }catch(e){console.error('MediaRecorder 실패',e);}
+  };
+
+  let sttBuffer='';  // 발화 누적 버퍼
+  ws.onmessage=async e=>{
+    try{
+      const d=JSON.parse(e.data);
+
+      // 발화 종료 신호 - 모인 문장을 번역해서 전송
+      if(d.type==='UtteranceEnd'){
+        const sentence=sttBuffer.trim();
+        sttBuffer='';
+        if(!sentence)return;
+        const translated=await translateText(sentence, myLangCode, peerLangCode);
+        if(isTestMode) showPeerSubtitle(translated);
+        else if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+        return;
+      }
+
+      if(d.type==='Results'){
+        const text=d.channel?.alternatives?.[0]?.transcript;
+        if(!text)return;
+        if(d.is_final){
+          // 확정된 조각을 버퍼에 누적
+          sttBuffer=(sttBuffer+' '+text).trim();
+          // speech_final이면 문장이 자연스럽게 끝난 것 → 바로 처리 (빠른 반응)
+          if(d.speech_final){
+            const sentence=sttBuffer.trim();
+            sttBuffer='';
+            if(!sentence)return;
+            const translated=await translateText(sentence, myLangCode, peerLangCode);
+            if(isTestMode) showPeerSubtitle(translated);
+            else if(callCh) callCh.send({type:'broadcast',event:'subtitle',payload:{text:translated,from:userId}});
+          }
+        }
+      }
+    }catch(err){console.error('STT 파싱 에러',err);}
+  };
+
+  ws.onerror=e=>console.error('Deepgram 에러',e);
+  ws.onclose=e=>{
+    console.log('Deepgram 종료 코드:',e.code, e.reason);
+    clearInterval(ws._keepalive);
+    // nova-3로 연결조차 안 됐으면 nova-2로 폴백 (모델 권한·언어 문제 대비)
+    if(!opened && model==='nova-3' && sttActive){
+      console.log('nova-3 실패 → nova-2로 폴백');
+      setTimeout(()=>{ if(sttActive&&localStream) startMySTT(localStream,myLangCode,peerLangCode,isTestMode,'nova-2'); },300);
+      return;
+    }
+    // 통화 중 끊기면 자동 재연결 (같은 모델로)
+    const onCall=document.getElementById('call')?.classList.contains('on');
+    if(sttActive && onCall){
+      console.log('STT 재연결 시도');
+      setTimeout(()=>{ if(sttActive&&localStream) startMySTT(localStream,myLangCode,peerLangCode,isTestMode,model); },500);
+    }
+  };
+  myDgSocket=ws;
+}
+
+function stopSTT(){
+  sttActive=false;
+  if(myDgSocket){
+    try{clearInterval(myDgSocket._keepalive);}catch(e){}
+    try{myDgSocket._recorder?.stop();}catch(e){}
+    try{if(myDgSocket.readyState<=1)myDgSocket.close();}catch(e){}
+    myDgSocket=null;
+  }
+}
+let sttActive=false;
+const MIN_CALL_SEC=30;
+const FREE_LIMIT=600;   // 하루 무료 사용량 (초) = 10분
+
+async function getDailyUsage(){
+  const{data}=await db.from('users').select('daily_seconds,last_reset,is_premium').eq('user_id',userId).maybeSingle();
+  if(!data)return{seconds:0,isPremium:false};
+  const today=new Date().toISOString().slice(0,10);
+  if(data.last_reset!==today){
+    await db.from('users').update({daily_seconds:0,last_reset:today}).eq('user_id',userId);
+    return{seconds:0,isPremium:data.is_premium};
+  }
+  return{seconds:data.daily_seconds||0,isPremium:data.is_premium};
+}
+
+async function saveUsage(addSecs){
+  const{seconds}=await getDailyUsage();
+  const today=new Date().toISOString().slice(0,10);
+  const newSecs=Math.min(seconds+addSecs,FREE_LIMIT+600);
+  await db.from('users').update({daily_seconds:newSecs,last_reset:today}).eq('user_id',userId);
+  return newSecs;
+}
+
+// 별점 평가
+let selectedRating=0;
+let lastCallId=null, lastPartnerCountry=null;
+document.addEventListener('click',e=>{
+  const star=e.target.closest('.star');
+  if(!star)return;
+  selectedRating=parseInt(star.dataset.v);
+  document.querySelectorAll('.star').forEach(s=>{
+    if(parseInt(s.dataset.v)<=selectedRating){
+      s.style.filter='grayscale(0)';s.style.opacity='1';s.style.transform='scale(1.15)';
+    } else {
+      s.style.filter='grayscale(1)';s.style.opacity='.4';s.style.transform='scale(1)';
+    }
+  });
+  // 별점 DB 저장
+  if(lastCallId){
+    try{ db.from('calls').update({rating:selectedRating}).eq('id',lastCallId); }catch(e){}
+  }
+  toast(t('t_rated'));
+});
+
+let lastPartnerId=null;
+async function reportUser(){
+  const ok=await showConfirm(t('report_q')+'\n'+t('report_detail'));
+  if(ok){
+    try{
+      db.from('reports').insert({
+        reporter_id:userId,
+        reported_id:lastPartnerId||'unknown',
+        created_at:new Date().toISOString()
+      });
+    }catch(e){}
+    const blocked=JSON.parse(localStorage.getItem('rgeo_blocked')||'[]');
+    if(lastPartnerId&&!blocked.includes(lastPartnerId)){
+      blocked.push(lastPartnerId);
+      localStorage.setItem('rgeo_blocked',JSON.stringify(blocked));
+    }
+    toast(t('t_reported'));
+  }
+}
+
+// 커스텀 토스트
+let toastTimer=null;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.opacity='1';
+  el.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{
+    el.style.opacity='0';
+    el.style.transform='translateX(-50%) translateY(20px)';
+  },2500);
+}
+
+// 커스텀 확인 모달
+function showConfirm(text){
+  return new Promise(resolve=>{
+    const modal=document.getElementById('confirmModal');
+    document.getElementById('confirmText').textContent=text;
+    modal.style.display='flex';
+    const ok=document.getElementById('confirmOk');
+    const cancel=document.getElementById('confirmCancel');
+    const close=(val)=>{
+      modal.style.display='none';
+      ok.onclick=null;cancel.onclick=null;
+      resolve(val);
+    };
+    ok.onclick=()=>close(true);
+    cancel.onclick=()=>close(false);
+  });
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  // 영상 배경 화면이면 비디오 강제 재생 (onboard, login)
+  if(id==='onboard' || id==='login'){
+    const vid=id==='onboard'?'onboardVideo':'loginVideo';
+    const v=document.getElementById(vid);
+    if(v){
+      v.muted=true;
+      v.play().catch(()=>{
+        setTimeout(()=>v.play().catch(e=>console.log('비디오 재생 차단',e)),300);
+      });
+    }
+  }
+}
+async function cancelMatch(){clearInterval(adTimer);clearInterval(matchPoll);clearTimeout(matchTimeout);await db.from('matching_pool').delete().eq('user_id',userId);matchCh?.unsubscribe();show('setup');}
+function cleanupCall(){
+  stopSTT();
+  clearInterval(timerIv);
+  pc?.close();pc=null;
+  // 스트림은 끄지 않고 유지 (다음 통화에 재사용 → iOS 권한 반복요청 방지)
+  callCh?.unsubscribe();callCh=null;
+  db.from('matching_pool').delete().eq('user_id',userId);
+}
+// 카메라/마이크 완전 종료 (앱을 떠날 때만)
+function stopStream(){
+  localStream?.getTracks().forEach(t=>t.stop());
+  localStream=null;
+}
+function cleanup(){cleanupCall();show('setup');}
+
+// 페이지 떠날 때 매칭 풀에서 제거 (유령 대기자 방지)
+window.addEventListener('beforeunload',()=>{
+  // 통화 중이면 상대방에게 종료 신호
+  if(callCh){
+    try{ callCh.send({type:'broadcast',event:'end',payload:{}}); }catch(e){}
+  }
+  stopStream(); // 앱 떠날 때 카메라 완전 종료
+  if(userId){
+    try{
+      navigator.sendBeacon(
+        `${DB_URL}/rest/v1/matching_pool?user_id=eq.${userId}`,
+        new Blob([JSON.stringify({status:'left'})],{type:'application/json'})
+      );
+    }catch(e){}
+    try{ db.from('matching_pool').delete().eq('user_id',userId); }catch(e){}
+  }
+});
+
+// 앱이 백그라운드로 가도 (홈버튼 등) 통화 정리
+document.addEventListener('visibilitychange',()=>{
+  // 백그라운드 가는 것만으로 끊지는 않음 (잠깐 다른 앱 볼 수 있으니)
+  // WebRTC 연결 상태 감지가 실제 끊김을 처리함
+});
+</script>
+<!-- RESULT -->
+<div class="screen" id="result">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 28px;">
+    <div style="font-size:56px;margin-bottom:20px;" id="resultEmoji">👋</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-.04em;margin-bottom:8px;text-align:center;" id="resultTitle" data-i18n="result_good">대화가 끝났어요</div>
+    <div style="font-size:16px;color:var(--ink2);text-align:center;line-height:1.6;margin-bottom:32px;" id="resultDesc"></div>
+
+    <!-- 별점 평가 -->
+    <div id="ratingCard" style="width:100%;background:var(--bg);border-radius:var(--radius);padding:24px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:16px;font-weight:600;margin-bottom:16px;" data-i18n="rate_q">방금 만난 친구, 어땠어요?</div>
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:18px;" id="starRow">
+        <span class="star" data-v="1" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+        <span class="star" data-v="2" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+        <span class="star" data-v="3" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+        <span class="star" data-v="4" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+        <span class="star" data-v="5" style="font-size:36px;cursor:pointer;filter:grayscale(1);opacity:.4;transition:all .15s;">⭐</span>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:16px;">
+        <button onclick="reportUser()" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#ef4444;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:6px 12px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          불편한 일이 있었다면 알려주세요
+        </button>
+      </div>
+    </div>
+
+    <!-- 사용량 (초기엔 숨김, 무료시간 다 썼을 때만 표시) -->
+    <div id="usageCard" style="width:100%;background:var(--bg);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:14px;font-weight:600;color:var(--ink);" data-i18n="usage_today">오늘 사용량</div>
+        <div style="font-size:14px;color:var(--ink2);" id="usageText">0 / 10분</div>
+      </div>
+      <div style="height:8px;background:var(--border);border-radius:100px;overflow:hidden;">
+        <div id="usageBar" style="height:100%;background:var(--blue);border-radius:100px;transition:width .5s ease;width:0%;"></div>
+      </div>
+    </div>
+
+    <div id="premiumCard" style="display:none;width:100%;background:linear-gradient(135deg,#3182f6,#1d4ed8);border-radius:var(--radius);padding:24px;margin-bottom:16px;">
+      <div style="font-size:17px;font-weight:700;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span data-i18n="member_title">Globut 인증 멤버</span> <svg style="width:18px;height:18px;" viewBox="0 0 24 24"><path fill="#fff" d="M12 1l2.4 2.1 3.2-.3 1.3 2.9 2.9 1.3-.3 3.2L23.6 12l-2.1 2.4.3 3.2-2.9 1.3-1.3 2.9-3.2-.3L12 23.6l-2.4-2.1-3.2.3-1.3-2.9-2.9-1.3.3-3.2L.4 12l2.1-2.4-.3-3.2 2.9-1.3 1.3-2.9 3.2.3z"/><path fill="#3182f6" d="M10.5 14.4l-2.1-2.1-1.4 1.4 3.5 3.5 6-6-1.4-1.4z"/></svg></div>
+      <div style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:14px;" data-i18n="member_safe">안심하고 만날 수 있는 사람들의 표시예요</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.92);margin-bottom:18px;line-height:1.7;" data-i18n="member_desc">검증된 멤버끼리 먼저 연결돼요. 인증마크로 안심하고 만나세요.</div>
+      <button onclick="goPremium()" style="width:100%;padding:16px;background:#fff;color:var(--blue);border:none;border-radius:14px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;" data-i18n="member_cta">월 9,900원 · 인증 멤버 되기</button>
+    </div>
+
+    <button class="btn-blue" onclick="show('setup')" style="width:100%;" data-i18n="new_friend">새로운 친구 만나기</button>
+    <button onclick="show('setup')" style="margin-top:12px;font-size:15px;color:var(--ink3);background:none;border:none;font-family:inherit;cursor:pointer;padding:8px;" data-i18n="home">홈으로</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast" style="position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,.92);color:#fff;padding:14px 24px;border-radius:14px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;max-width:340px;text-align:center;line-height:1.5;backdrop-filter:blur(8px);"></div>
+
+<!-- 확인 모달 -->
+<div id="confirmModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:none;align-items:center;justify-content:center;padding:32px;backdrop-filter:blur(2px);">
+  <div style="background:#fff;border-radius:24px;padding:28px 24px 20px;max-width:340px;width:100%;text-align:center;">
+    <div id="confirmText" style="font-size:17px;font-weight:600;color:#111;line-height:1.5;margin-bottom:24px;" data-i18n="leave_q">정말 나가시겠어요?</div>
+    <div style="display:flex;gap:8px;">
+      <button id="confirmCancel" style="flex:1;padding:15px;background:#f2f2f2;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;color:#666;cursor:pointer;" data-i18n="cancel">취소</button>
+      <button id="confirmOk" style="flex:1;padding:15px;background:#FF6B4A;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer;">확인</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
